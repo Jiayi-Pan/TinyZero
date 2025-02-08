@@ -115,11 +115,3 @@ def _flatten_dict(raw: Dict[str, Any], *, sep: str) -> Dict[str, Any]:
     ans = pd.json_normalize(raw, sep=sep).to_dict(orient='records')[0]
     assert isinstance(ans, dict)
     return ans
-
-tracker = Tracking(
-    project_name="my_project",
-    experiment_name="my_experiment",
-    default_backend="swanlab",
-    config={"learning_rate": 0.001}   
-)
-tracker.log({"loss": 0.5}, step=1)
