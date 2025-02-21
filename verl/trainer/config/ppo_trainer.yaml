@@ -72,7 +72,7 @@ actor_rollout_ref:
     enforce_eager: True
     free_cache_engine: True
     load_format: dummy_dtensor
-    tensor_model_parallel_size: 2
+    tensor_model_parallel_size: ${oc.env:ROLLOUT_TP_SIZE,2}
     max_num_batched_tokens: 8192
     max_num_seqs: 1024
     log_prob_micro_batch_size: 128
@@ -157,3 +157,4 @@ trainer:
   critic_warmup: 0
   default_hdfs_dir: ~/experiments/gsm8k/ppo/${trainer.experiment_name}
   default_local_dir: checkpoints/${trainer.project_name}/${trainer.experiment_name}
+  data_parallel_size: 1
