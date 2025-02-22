@@ -37,7 +37,7 @@ def gen_dataset(
     for _ in tqdm(range(N)):
         # Helper function to generate a number with 50% chance of being N-digit or N/2-digit
         def get_random_num():
-            r = randint(,3)
+            r = randint(0,3)
             if r == 0:
                 # 2 digits less than original
                 max_num = 10**(DIGIT-2)
