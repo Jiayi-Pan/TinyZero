@@ -34,11 +34,13 @@ dependencies = [
     "codetiming",
     "datasets",
     "dill",
+    "flash_attn",
     "hydra-core",
     "numpy",
     "pybind11",
     "ray",
     "tensordict",
+    "torchaudio<=2.4.0",
     "transformers<4.48",
     "vllm<=0.6.3",
 ]
