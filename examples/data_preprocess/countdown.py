@@ -67,16 +67,18 @@ Assistant: Let me solve this step by step.
 
 
 if __name__ == '__main__':
+    default_num_samples = 10000
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--local_dir', default='/workspace/TinyZeroGRPO/data/countdown')
     parser.add_argument('--hdfs_dir', default=None)
-    parser.add_argument('--num_samples', type=int, default=10000)
+    parser.add_argument('--num_samples', type=int, default=default_num_samples)
     parser.add_argument('--num_operands', type=int, default=6)
     parser.add_argument('--max_target', type=int, default=1000)
     parser.add_argument('--min_number', type=int, default=1)
     parser.add_argument('--max_number', type=int, default=100)
-    parser.add_argument('--train_size', type=int, default=8000)
-    parser.add_argument('--test_size', type=int, default=2000)
+    parser.add_argument('--train_size', type=int, default=int(0.8 * default_num_samples + 1))
+    parser.add_argument('--test_size', type=int, default=int(0.2 * default_num_samples + 1))
     parser.add_argument('--template_type', type=str, default='base')
 
     args = parser.parse_args()

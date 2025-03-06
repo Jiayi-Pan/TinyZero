@@ -74,16 +74,20 @@ class RewardManager():
             sequences_str = self.tokenizer.decode(sequences)
 
             data_source = data_item.non_tensor_batch['data_source']
-
-            ground_truth = None
-            if data_source == 'cryptarithm':
-                ground_truth = data_item.non_tensor_batch['reward_model']['encrypted_equation']
-            elif data_source == 'countdown':
-                ground_truth = data_item.non_tensor_batch['reward_model']['ground_truth']
-
-            # select rm_score
             
+            ground_truth = None
+            if data_source == 'countdown':
+                ground_truth = data_item.non_tensor_batch['reward_model']['ground_truth']
+            elif data_source == 'cryptarithm':
+                ground_truth = data_item.non_tensor_batch['reward_model']['encrypted_equation']
+
             compute_score_fn = _select_rm_score_fn(data_source)
+
+            if ground_truth is not None:
+                score = compute_score_fn(solution_str=sequences_str, ground_truth=ground_truth)
+                reward_tensor[i, valid_response_length - 1] = score
+            else:
+                reward_tensor[i, valid_response_length - 1] = 0.0
 
             score = compute_score_fn(solution_str=sequences_str, ground_truth=ground_truth)
             reward_tensor[i, valid_response_length - 1] = score
@@ -119,7 +123,7 @@ def main_task(config):
     # print initial config
     from pprint import pprint
     from omegaconf import OmegaConf
-    pprint(OmegaConf.to_container(config, resolve=True))  # resolve=True will eval symbol values
+    # pprint(OmegaConf.to_container(config, resolve=True))  # resolve=True will eval symbol values
     OmegaConf.resolve(config)
 
     # download the checkpoint from hdfs

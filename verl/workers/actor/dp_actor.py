@@ -168,10 +168,6 @@ class DataParallelPPOActor(BasePPOActor):
         Returns:
             torch.Tensor: the log_prob tensor
         """
-
-        log_index = 20
-
-
         # set to eval
         self.actor_module.eval()
 
@@ -182,18 +178,12 @@ class DataParallelPPOActor(BasePPOActor):
         select_keys = ['responses', 'input_ids', 'attention_mask', 'position_ids']
         batch = data.select(batch_keys=select_keys).batch
 
-        print(log_index)
-        log_index += 1
-
         if use_dynamic_bsz:
             # split using dynamic bsz
             max_token_len = data.meta_info['max_token_len'] * self.ulysses_sequence_parallel_size
             micro_batches, indices = rearrange_micro_batches(batch=batch, max_token_len=max_token_len)
         else:
             micro_batches = batch.split(micro_batch_size)
-
-        print(log_index)
-        log_index += 1
 
         log_probs_lst = []
         for micro_batch in micro_batches:
@@ -202,17 +192,11 @@ class DataParallelPPOActor(BasePPOActor):
             log_probs_lst.append(log_probs)
         log_probs = torch.concat(log_probs_lst, dim=0)
 
-        print(log_index)
-        log_index += 1
-
         if use_dynamic_bsz:
             indices = list(itertools.chain.from_iterable(indices))
             assert len(indices) == log_probs.size(0), f"{len(indices)} vs. {log_probs.size()}"
             revert_indices = torch.tensor(get_reverse_idx(indices), dtype=torch.long)
             log_probs = log_probs[revert_indices]
-
-        print(log_index)
-        log_index += 1
 
         return log_probs
 

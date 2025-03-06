@@ -65,14 +65,22 @@ class RewardManager():
             sequences = torch.cat((valid_prompt_ids, valid_response_ids))
             sequences_str = self.tokenizer.decode(sequences)
 
-            ground_truth = data_item.non_tensor_batch['reward_model']['ground_truth']
-
             # select rm_score
             data_source = data_item.non_tensor_batch['data_source']
+
+            ground_truth = None
+            if data_source == 'countdown':
+                ground_truth = data_item.non_tensor_batch['reward_model']['ground_truth']
+            elif data_source == 'cryptarithm':
+                ground_truth = data_item.non_tensor_batch['reward_model']['encrypted_equation']
+
             compute_score_fn = _select_rm_score_fn(data_source)
 
-            score = compute_score_fn(solution_str=sequences_str, ground_truth=ground_truth)
-            reward_tensor[i, valid_response_length - 1] = score
+            if ground_truth is not None:
+                score = compute_score_fn(solution_str=sequences_str, ground_truth=ground_truth)
+                reward_tensor[i, valid_response_length - 1] = score
+            else:
+                reward_tensor[i, valid_response_length - 1] = 0.0
 
             if data_source not in already_print_data_sources:
                 already_print_data_sources[data_source] = 0

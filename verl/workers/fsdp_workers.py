@@ -448,8 +448,6 @@ class ActorRolloutRefWorker(Worker):
     @register(dispatch_mode=Dispatch.DP_COMPUTE_PROTO)
     def compute_ref_log_prob(self, data: DataProto):
         print("Compute Log Init")
-        log_index = 10
-
         assert self._is_ref
 
         data = data.to('cuda')
@@ -459,9 +457,6 @@ class ActorRolloutRefWorker(Worker):
                                      device_id=torch.cuda.current_device(),
                                      load_grad=self._is_offload_grad)
 
-        print(log_index)
-        log_index += 1
-
         micro_batch_size = self.config.ref.log_prob_micro_batch_size
         data.meta_info['micro_batch_size'] = micro_batch_size
         data.meta_info['temperature'] = self.config.rollout.temperature
@@ -470,24 +465,10 @@ class ActorRolloutRefWorker(Worker):
         with self.ulysses_sharding_manager:
             data = self.ulysses_sharding_manager.preprocess_data(data)
 
-            print(log_index)
-            log_index += 1
-
             output = self.ref_policy.compute_log_prob(data=data)
-
-            print(log_index)
-            log_index += 1
-
             output = DataProto.from_dict(tensors={'ref_log_prob': output})
-
-            print(log_index)
-            log_index += 1
-
             output = self.ulysses_sharding_manager.postprocess_data(output)
-
-            print(log_index)
-            log_index += 1
-
+            
         output = output.to('cpu')
 
         if self._is_offload_param:
