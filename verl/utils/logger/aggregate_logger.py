@@ -24,7 +24,8 @@ def concat_dict_to_str(dict: Dict, step):
         if isinstance(v, numbers.Number):
             output.append(f'{k}:{v:.3f}')
     output_str = ' - '.join(output)
-    return output_str
+    # return output_str
+    return ''
 
 
 class LocalLogger:
