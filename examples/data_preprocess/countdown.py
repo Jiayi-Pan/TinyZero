@@ -18,7 +18,6 @@ def gen_dataset(
     max_target: int = 1000,
     min_number: int = 1,
     max_number: int = 100,
-    operations: List[str] = ['+', '-', '*', '/'],
     seed_value: int = 42,
 ) -> List[Tuple]:
     """Generate dataset for countdown task.
@@ -29,7 +28,6 @@ def gen_dataset(
         max_target: Maximum value for target number
         min_number: Minimum value for provided numbers
         max_number: Maximum value for provided numbers
-        operations: List of allowed operations
         seed_value: Random seed for reproducibility
         
     Returns:
