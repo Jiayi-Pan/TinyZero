@@ -16,7 +16,7 @@ Paper's on it's way!
 ## Installation
 
 ```
-conda create -n zero python=3.9
+conda create -n zero python=3.9 -y && conda activate zero
 # install torch [or you can skip this step and let vllm to install the correct version for you]
 pip install torch==2.4.0 --index-url https://download.pytorch.org/whl/cu121
 # install vllm
