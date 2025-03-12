@@ -5,13 +5,13 @@ TinyZero is a reproduction of [DeepSeek R1 Zero](https://github.com/deepseek-ai/
 
 Through RL, the 3B base LM develops self-verification and search abilities all on its own 
 
-You can experience the Ahah moment yourself for < $30 
+You can experience the Aha moment yourself for < $30 
 
 Twitter thread: https://x.com/jiayi_pirate/status/1882839370505621655
 
 Full experiment log: https://wandb.ai/jiayipan/TinyZero
 
-Paper's on it's way!
+Paper is on its way!
 
 ## Installation
 
@@ -97,7 +97,7 @@ export VLLM_ATTENTION_BACKEND=XFORMERS
 bash ./scripts/train_tiny_zero.sh
 ```
 
-## Acknowledge
+## Acknowledgements
 * We run our experiments based on [veRL](https://github.com/volcengine/verl).
 * We use Qwen2.5 series base model [Qwen2.5](https://github.com/QwenLM/Qwen2.5).
 
