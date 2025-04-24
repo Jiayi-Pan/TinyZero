@@ -22,7 +22,7 @@ from typing import List, Union, Dict, Any
 
 
 class Tracking(object):
-    supported_backend = ['wandb', 'mlflow', 'console']
+    supported_backend = ['wandb', 'mlflow', 'console', 'swanlab']
 
     def __init__(self, project_name, experiment_name, default_backend: Union[str, List[str]] = 'console', config=None):
         if isinstance(default_backend, str):
@@ -44,6 +44,20 @@ class Tracking(object):
                 wandb.login(key=WANDB_API_KEY)
             wandb.init(project=project_name, name=experiment_name, config=config)
             self.logger['wandb'] = wandb
+
+        if 'swanlab' in default_backend:
+            import swanlab
+            import os
+            SWANLAB_API_KEY = os.environ.get("SWANLAB_API_KEY", None)
+            if SWANLAB_API_KEY:
+                swanlab.login(api_key=SWANLAB_API_KEY)
+            swanlab.init(
+                project=project_name,
+                experiment_name=experiment_name,
+                description="TinyZero with swanlab",
+                config=config
+            )
+            self.logger['swanlab'] = swanlab
 
         if 'mlflow' in default_backend:
             import mlflow
