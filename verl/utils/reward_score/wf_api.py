@@ -47,7 +47,7 @@ def is_valid_json(api_request):
 
 
 def compute_score(
-    llm_response, ground_truth, method="strict", format_score=0.1, score=1.0
+    solution_str, ground_truth, method="strict", format_score=0.1, score=1.0
 ):
     """The scoring function for countdown task.
 
@@ -60,7 +60,7 @@ def compute_score(
     """
     expected_response = ground_truth
 
-    answer = extract_answer(solution_str=llm_response)
+    answer = extract_answer(solution_str)
     # do_print = random.randint(1, 64) == 1
     do_print = True
 
@@ -68,7 +68,7 @@ def compute_score(
         print("--------------------------------")
         print(f"Expected response: {expected_response}")
         print(f"Extracted answer: {answer}")
-        print(f"LLM Response: {llm_response}")
+        print(f"LLM Response: {solution_str}")
 
     if answer is None:
         if do_print:
