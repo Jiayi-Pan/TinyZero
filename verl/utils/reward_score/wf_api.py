@@ -45,10 +45,11 @@ def compute_score(
         format_score: the score for correct format but wrong answer
         score: the score for the correct answer
     """
-    expected_response = ground_truth["correct_answer"]
+    expected_response = ground_truth
 
     api_request = extract_api_request(solution_str=solution_str)
-    do_print = random.randint(1, 64) == 1
+    # do_print = random.randint(1, 64) == 1
+    do_print = True
 
     if do_print:
         print("--------------------------------")

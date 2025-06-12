@@ -209,15 +209,7 @@ if __name__ == "__main__":
                     }
                 ],
                 "ability": "api_planning",
-                "reward_model": {
-                    "style": "rule",
-                    "ground_truth": {
-                        "correct_answer": sample["answer"],
-                        "question": sample["question"],
-                        "template_type": sample["template_type"],
-                        "original_response": sample.get("original_response", {}),
-                    },
-                },
+                "reward_model": {"style": "rule", "ground_truth": sample["answer"]},
             }
             processed_data.append(data)
         return processed_data
