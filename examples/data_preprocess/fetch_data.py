@@ -20,7 +20,7 @@ def load_workfront_data(json_file_path: str) -> List[Dict]:
         samples.append({
             "question": data['prompt'],
             "answer": api_call_steps,
-            "template_type": "workfront_api",
+            "template_type": "wf_api",
             "original_response": expected_response
         })
     
@@ -195,13 +195,13 @@ if __name__ == '__main__':
             question = make_prefix(sample['question'], template_type=args.template_type)
             
             data = {
-                "data_source": data_source,
+                "data_source": "wf_api",
                 "prompt": [{
                     "role": "user",
                     "content": question,
                 }],
                 "ability": "api_planning",
-                "reward_model": {
+                "expected_response": {
                     "style": "rule",
                     "ground_truth": {
                         "correct_answer": sample['answer'],
@@ -209,10 +209,6 @@ if __name__ == '__main__':
                         "template_type": sample['template_type'],
                         "original_response": sample.get('original_response', {})
                     }
-                },
-                "extra_info": {
-                    'split': split,
-                    'index': idx,
                 }
             }
             processed_data.append(data)
