@@ -19,7 +19,9 @@
       "fields": ["ID", "name", "status", "actualCompletionDate"],
       "filters": {
         "status": "CPL",
-        "actualCompletionDate": "$$TODAYbw-7d"
+        "actualCompletionDate": "$$TODAYb-1w",
+        "actualCompletionDate_Mod": "between",
+        "actualCompletionDate_Range": "$$TODAYe-1w"
       }
     }
   },
@@ -41,9 +43,9 @@
       "objCode": "TASK",
       "fields": ["ID", "name", "status", "plannedCompletionDate"],
       "filters": {
-        "status_Mod": "ne",
-        "status": "CPL",
-        "plannedCompletionDate": "$$TODAYlt"
+        "actualCompletionDate_Mod": "isnull",
+        "plannedCompletionDate": "$$TODAY",
+        "plannedCompletionDate_Mod": "lt"
       }
     }
   },
@@ -66,7 +68,10 @@
       "objCode": "TASK",
       "fields": ["ID", "name", "plannedCompletionDate"],
       "filters": {
-        "plannedCompletionDate": "$$TODAYfw+3d"
+        "actualCompletionDate_Mod": "isnull",
+        "plannedCompletionDate": "$$TODAY",
+        "plannedCompletionDate_Mod": "between",
+        "plannedCompletionDate_Range": "$$TODAY+3d"
       }
     }
   },
@@ -75,9 +80,9 @@
     "expected_response": {
       "tool": "fetch_data",
       "objCode": "USER",
-      "fields": ["ID", "name", "team:name"],
+      "fields": ["ID", "name", "teams:name"],
       "filters": {
-        "team:name": "Product Team"
+        "teams:name": "Product Team"
       }
     }
   },
@@ -100,7 +105,9 @@
       "objCode": "PROJ",
       "fields": ["ID", "name", "plannedStartDate"],
       "filters": {
-        "plannedStartDate": "$$THISMONTH"
+        "actualCompletionDate": "$$TODAYbm",
+        "actualCompletionDate_Mod": "between",
+        "actualCompletionDate_Range": "$$TODAYem"
       }
     }
   },
@@ -111,7 +118,9 @@
       "objCode": "USER",
       "fields": ["ID", "name", "entryDate"],
       "filters": {
-        "entryDate": "$$TODAYbw-30d"
+        "entryDate": "$$TODAY-30d",
+        "entryDate_Mod": "between",
+        "entryDate_Range": "$$TODAY"
       }
     }
   },
@@ -122,8 +131,7 @@
       "objCode": "TASK",
       "fields": ["ID", "name", "assignedTo:name", "status"],
       "filters": {
-        "status_Mod": "ne",
-        "status": "CPL",
+        "actualCompletionDate_Mod": "isnull",
         "assignedTo:name": "John Doe"
       }
     }
@@ -147,8 +155,11 @@
       "objCode": "TASK",
       "fields": ["ID", "name", "priority", "plannedCompletionDate"],
       "filters": {
-        "priority": "High",
-        "plannedCompletionDate": "$$TODAYbw+7d"
+        "priority": 3,
+        "actualCompletionDate_Mod": "isnull",
+        "plannedCompletionDate": "$$TODAYb+1w",
+        "plannedCompletionDate_Mod": "between",
+        "plannedCompletionDate_Range": "$$TODAYe+1w"
       }
     }
   },

@@ -69,14 +69,14 @@ def compute_score(
 
     # Check presence of keys: obj_code, fields, filters
     required_fields = ["obj_code", "fields", "filters"]
-    missing_field_count = 0
+    field_presence_count = 0
     for field in required_fields:
-        if field not in api_request:
-            missing_field_count += 1
-            print(f"Missing field: {field}")
+        if field in api_request:
+            field_presence_count += 1
 
-    if missing_field_count > 0:
-        score = 0.45 - (missing_field_count * 0.1)
+    if field_presence_count < 3:
+        print(f"Missing {3 - field_presence_count} fields")
+        score = format_score + (field_presence_count * 0.1)
         return score
 
     # Check if obj_code is correct
@@ -90,9 +90,13 @@ def compute_score(
         return 0.5
 
     # Check if fields are correct
-    if sorted(api_request["fields"]) != sorted(expected_response["fields"]):
-        print(f"Incorrect fields: {api_request['fields']}")
-        return 0.6
+    for field in expected_response["fields"]:
+        if field in ["ID", "name"]:
+            continue
+
+        if field not in api_request["fields"]:
+            print(f"Missing field: {field}")
+            return 0.6
 
     print("Correct API request")
     return 1.0
