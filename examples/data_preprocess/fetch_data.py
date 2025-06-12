@@ -7,60 +7,28 @@ import argparse
 
 
 def load_workfront_data(json_file_path: str) -> List[Dict]:
-    """Load Workfront API data from JSON file"""
     samples = []
     
     with open(json_file_path, 'r') as f:
-        for line in f:
-            if line.strip():  # Skip empty lines
-                data = json.loads(line.strip())
-                
-                # Convert the expected_response to a readable API call format
-                expected_response = data['expected_response']
-                
-                # Format the API call as a step-by-step instruction
-                api_call_steps = format_workfront_api_call(expected_response)
-                
-                samples.append({
-                    "question": data['prompt'],
-                    "answer": api_call_steps,
-                    "template_type": "workfront_api",
-                    "original_response": expected_response
-                })
+        data_list = json.load(f)
+    
+    for data in data_list:
+        expected_response = data['expected_response']
+        
+        api_call_steps = format_workfront_api_call(expected_response)
+        
+        samples.append({
+            "question": data['prompt'],
+            "answer": api_call_steps,
+            "template_type": "workfront_api",
+            "original_response": expected_response
+        })
     
     return samples
 
 
 def format_workfront_api_call(expected_response: Dict) -> str:
-    """Convert Workfront API response format to step-by-step instructions"""
-    tool = expected_response.get('tool', 'fetch_data')
-    obj_code = expected_response.get('objCode', '')
-    fields = expected_response.get('fields', [])
-    filters = expected_response.get('filters', {})
-    
-    steps = []
-    
-    # Step 1: Initialize the API call
-    steps.append(f"1. Call Workfront API with tool='{tool}' and objCode='{obj_code}'")
-    
-    # Step 2: Set the fields to retrieve
-    if fields:
-        fields_str = ", ".join([f"'{field}'" for field in fields])
-        steps.append(f"2. Set fields parameter to [{fields_str}]")
-    
-    # Step 3: Apply filters
-    if filters:
-        filter_parts = []
-        for key, value in filters.items():
-            if isinstance(value, str):
-                filter_parts.append(f"{key}='{value}'")
-            else:
-                filter_parts.append(f"{key}={value}")
-        
-        filters_str = ", ".join(filter_parts)
-        steps.append(f"3. Apply filters: {filters_str}")
-    
-    return "\n".join(steps)
+    return json.dumps(expected_response, indent=2)
 
 
 def make_prefix(question, template_type='base'):
