@@ -45,7 +45,7 @@ def compute_score(
         format_score: the score for correct format but wrong answer
         score: the score for the correct answer
     """
-    expected_response = ground_truth["expected_response"]
+    expected_response = ground_truth["correct_answer"]
 
     api_request = extract_api_request(solution_str=solution_str)
     do_print = random.randint(1, 64) == 1
