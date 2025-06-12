@@ -36,8 +36,7 @@ def format_workfront_api_call(expected_response: Dict) -> str:
 def make_prefix(question, template_type="base"):
     """Create the prompt prefix for API tasks"""
     if template_type == "base":
-        prefix = """
-You are a helpful AI assistant designed to convert natural language queries into structured JSON commands for querying the Workfront project management system. You use Workfront's custom object names and metadata to do the same using the context given below.
+        prefix = f"""You are a helpful AI assistant designed to convert natural language queries into structured JSON commands for querying the Workfront project management system. You use Workfront's custom object names and metadata to do the same using the context given below.
 
 Your role is to interpret a user's natural language request, determine the correct object (objCode like TASK, PROJ, or USER), extract relevant fields (the attributes to display), and construct appropriate filters (conditions the data must satisfy). 
 
@@ -46,11 +45,11 @@ You will take the user's natural language prompt and finally give a structured J
 
 Structure:
 ```json
-{
+{{
   'objCode': 'TASK | PROJ | USER',
   'fields': [],
-  'filters': {},
-}
+  'filters': {{}}
+}}
 ```
 
 The JSON must be wrapped in triple backticks to indicate code formatting.
@@ -61,16 +60,15 @@ User Prompt: What are all the tasks with high priority due next week?
 
 Answer:
 ```json
-{
+{{
   "objCode": "TASK",
   "fields": ["ID", "name", "priority", "plannedCompletionDate"],
-  "filters": {
+  "filters": {{
     "priority": "High",
     "plannedCompletionDate": "$$TODAYbw+7d"
-  }
-}
+  }}
+}}
 ```
-
 
 
  Workfront Object Context You Can Use
@@ -124,18 +122,18 @@ You are a helpful AI assistant designed to convert natural language queries into
 
 Your role is to interpret a user’s natural language request, determine the correct object (objCode like TASK, PROJ, or USER), extract relevant fields (the attributes to display), and construct appropriate filters (conditions the data must satisfy). Your output should follow this structure:
 
-{{
+{{{{
   "prompt": "What are all the tasks with high priority due next week?",
-  "expected_response": {{
+  "expected_response": {{{{
     "tool": "fetch_data",
     "objCode": "TASK",
     "fields": ["ID", "name", "priority", "plannedCompletionDate"],
-    "filters": {{
+    "filters": {{{{
       "priority": "High",
       "plannedCompletionDate": "$$TODAYbw+7d"
-    }}
-  }}
-}}
+    }}}}
+  }}}}
+}}}}
 
  Workfront Object Context You Can Use
 
