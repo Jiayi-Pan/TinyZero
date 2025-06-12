@@ -21,7 +21,7 @@ def load_workfront_data(json_file_path: str) -> List[Dict]:
             {
                 "question": data["prompt"],
                 "answer": api_call_steps,
-                "template_type": "workfront_api",
+                "template_type": "wf_api",
                 "original_response": expected_response,
             }
         )
@@ -202,7 +202,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    data_source = "workfront_api_tasks"
+    data_source = "wf_api"
 
     # Load the Workfront dataset
     print("Loading Workfront API dataset...")
@@ -229,19 +229,7 @@ if __name__ == "__main__":
                     }
                 ],
                 "ability": "api_planning",
-                "reward_model": {
-                    "style": "rule",
-                    "ground_truth": {
-                        "correct_answer": sample["answer"],
-                        "question": sample["question"],
-                        "template_type": sample["template_type"],
-                        "original_response": sample.get("original_response", {}),
-                    },
-                },
-                "extra_info": {
-                    "split": split,
-                    "index": idx,
-                },
+                "reward_model": {"style": "rule", "ground_truth": sample["answer"]},
             }
             processed_data.append(data)
         return processed_data
