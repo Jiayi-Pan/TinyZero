@@ -33,6 +33,7 @@ def _select_rm_score_fn(data_source):
     elif "wf_api" in data_source:
         return wf_api.compute_score
     else:
+        print("datasource", data_source)
         raise NotImplementedError
 
 
