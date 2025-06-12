@@ -3,7 +3,7 @@ import re
 import random
 
 
-def extract_api_request(solution_str):
+def extract_answer(solution_str):
     """Extract the API request from the solution string."""
     # Remove everything before the first "Assistant:"
     if "Assistant:" in solution_str:
@@ -24,6 +24,19 @@ def extract_api_request(solution_str):
     return final_answer
 
 
+def extract_json(answer):
+    """Extract ```json{}``` from the answer string."""
+    json_pattern = r"```json\s*(.*?)\s*```"
+    match = re.search(json_pattern, answer)
+    if match:
+        json_str = match.group(1).strip()
+        try:
+            return json.loads(json_str)
+        except json.JSONDecodeError:
+            return None
+    return None
+
+
 def is_valid_json(api_request):
     """Validate that the JSON string is valid."""
     try:
@@ -34,7 +47,7 @@ def is_valid_json(api_request):
 
 
 def compute_score(
-    solution_str, ground_truth, method="strict", format_score=0.1, score=1.0
+    llm_response, ground_truth, method="strict", format_score=0.1, score=1.0
 ):
     """The scoring function for countdown task.
 
@@ -47,25 +60,26 @@ def compute_score(
     """
     expected_response = ground_truth
 
-    api_request = extract_api_request(solution_str=solution_str)
+    answer = extract_answer(solution_str=llm_response)
     # do_print = random.randint(1, 64) == 1
     do_print = True
 
     if do_print:
         print("--------------------------------")
         print(f"Expected response: {expected_response}")
-        print(f"Extracted API request: {api_request}")
-        print(f"Solution string: {solution_str}")
+        print(f"Extracted answer: {answer}")
+        print(f"LLM Response: {llm_response}")
 
-    if api_request is None:
+    if answer is None:
         if do_print:
-            print("No API request found")
+            print("No answer tags found. SCORE: 0")
         return 0
 
     # Check if valid JSON
-    if not is_valid_json(api_request):
+    api_request = extract_json(answer)
+    if not api_request:
         if do_print:
-            print("Invalid JSON")
+            print("Invalid JSON. SCORE: 0.1")
         return format_score
 
     # Check presence of keys: obj_code, fields, filters

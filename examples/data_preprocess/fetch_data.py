@@ -8,22 +8,24 @@ import argparse
 
 def load_workfront_data(json_file_path: str) -> List[Dict]:
     samples = []
-    
-    with open(json_file_path, 'r') as f:
+
+    with open(json_file_path, "r") as f:
         data_list = json.load(f)
-    
+
     for data in data_list:
-        expected_response = data['expected_response']
-        
+        expected_response = data["expected_response"]
+
         api_call_steps = format_workfront_api_call(expected_response)
-        
-        samples.append({
-            "question": data['prompt'],
-            "answer": api_call_steps,
-            "template_type": "workfront_api",
-            "original_response": expected_response
-        })
-    
+
+        samples.append(
+            {
+                "question": data["prompt"],
+                "answer": api_call_steps,
+                "template_type": "workfront_api",
+                "original_response": expected_response,
+            }
+        )
+
     return samples
 
 
@@ -31,38 +33,35 @@ def format_workfront_api_call(expected_response: Dict) -> str:
     return json.dumps(expected_response, indent=2)
 
 
-def make_prefix(question, template_type='base'):
+def make_prefix(question, template_type="base"):
     """Create the prompt prefix for API tasks"""
-    if template_type == 'base':
-        prefix = f"""You are a helpful AI assistant designed to convert natural language queries into structured JSON commands for querying the Workfront project management system. You use Workfront’s custom object names and metadata to do the same using the context given below.
+    if template_type == "base":
+        prefix = """
+You are a helpful AI assistant designed to convert natural language queries into structured JSON commands for querying the Workfront project management system. You use Workfront's custom object names and metadata to do the same using the context given below.
 
-Your role is to interpret a user’s natural language request, determine the correct object (objCode like TASK, PROJ, or USER), extract relevant fields (the attributes to display), and construct appropriate filters (conditions the data must satisfy). 
+Your role is to interpret a user's natural language request, determine the correct object (objCode like TASK, PROJ, or USER), extract relevant fields (the attributes to display), and construct appropriate filters (conditions the data must satisfy). 
 
 
 You will take the user's natural language prompt and finally give a structured JSON response after understanding context with the following structure:
 
 Structure:
-```
+```json
 {
-  "tool": " "fetch_data",
-  "objCode": "TASK | PROJ | USER",
-  "fields": ["..."],               // Which fields should be displayed
-  "filters": {
-    "...": "..."                   // Filtering logic
-  }
+  'objCode': 'TASK | PROJ | USER',
+  'fields': [],
+  'filters': {},
 }
 ```
 
 The JSON must be wrapped in triple backticks to indicate code formatting.
 
-Here’s an example:
+Here's an example:
 
 User Prompt: What are all the tasks with high priority due next week?
 
 Answer:
-```
+```json
 {
-  "tool": "fetch_data",
   "objCode": "TASK",
   "fields": ["ID", "name", "priority", "plannedCompletionDate"],
   "filters": {
@@ -119,7 +118,7 @@ I need to understand the user's request and determine the correct object (objCod
 </thinking>
 
 <answer>"""
-    elif template_type == 'qwen-instruct':
+    elif template_type == "qwen-instruct":
         prefix = f"""<|im_start|>system
 You are a helpful AI assistant designed to convert natural language queries into structured JSON commands for querying the Workfront project management system. You use Workfront’s custom object names and metadata to do the same using the context given below.
 
@@ -190,68 +189,76 @@ I need to understand the user's request and determine the correct object (objCod
     return prefix
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--local_dir', default='~/data/workfront_api_tasks')
-    parser.add_argument('--json_file', required=True, help='Path to the JSON file with Workfront data')
-    parser.add_argument('--train_split', type=float, default=0.8, help='Proportion of data for training')
-    parser.add_argument('--template_type', type=str, default='base')
+    parser.add_argument("--local_dir", default="~/data/workfront_api_tasks")
+    parser.add_argument(
+        "--json_file", required=True, help="Path to the JSON file with Workfront data"
+    )
+    parser.add_argument(
+        "--train_split", type=float, default=0.8, help="Proportion of data for training"
+    )
+    parser.add_argument("--template_type", type=str, default="base")
 
     args = parser.parse_args()
 
-    data_source = 'workfront_api_tasks'
+    data_source = "workfront_api_tasks"
 
     # Load the Workfront dataset
     print("Loading Workfront API dataset...")
     raw_samples = load_workfront_data(args.json_file)
-    
+
     # Split into train and test
     total_samples = len(raw_samples)
     train_size = int(total_samples * args.train_split)
-    
+
     train_samples = raw_samples[:train_size]
     test_samples = raw_samples[train_size:]
 
     def process_samples(samples, split):
         processed_data = []
         for idx, sample in enumerate(samples):
-            question = make_prefix(sample['question'], template_type=args.template_type)
-            
+            question = make_prefix(sample["question"], template_type=args.template_type)
+
             data = {
                 "data_source": data_source,
-                "prompt": [{
-                    "role": "user",
-                    "content": question,
-                }],
+                "prompt": [
+                    {
+                        "role": "user",
+                        "content": question,
+                    }
+                ],
                 "ability": "api_planning",
                 "reward_model": {
                     "style": "rule",
                     "ground_truth": {
-                        "correct_answer": sample['answer'],
-                        "question": sample['question'],
-                        "template_type": sample['template_type'],
-                        "original_response": sample.get('original_response', {})
-                    }
+                        "correct_answer": sample["answer"],
+                        "question": sample["question"],
+                        "template_type": sample["template_type"],
+                        "original_response": sample.get("original_response", {}),
+                    },
                 },
                 "extra_info": {
-                    'split': split,
-                    'index': idx,
-                }
+                    "split": split,
+                    "index": idx,
+                },
             }
             processed_data.append(data)
         return processed_data
-    
-    train_dataset = Dataset.from_list(process_samples(train_samples, 'train'))
-    test_dataset = Dataset.from_list(process_samples(test_samples, 'test'))
+
+    train_dataset = Dataset.from_list(process_samples(train_samples, "train"))
+    test_dataset = Dataset.from_list(process_samples(test_samples, "test"))
 
     local_dir = os.path.expanduser(args.local_dir)
     os.makedirs(local_dir, exist_ok=True)
 
     print(f"Saving datasets to {local_dir}")
-    train_dataset.to_parquet(os.path.join(local_dir, 'train.parquet'))
-    test_dataset.to_parquet(os.path.join(local_dir, 'test.parquet'))
-    
-    print(f"Generated {len(train_dataset)} training samples and {len(test_dataset)} test samples")
+    train_dataset.to_parquet(os.path.join(local_dir, "train.parquet"))
+    test_dataset.to_parquet(os.path.join(local_dir, "test.parquet"))
+
+    print(
+        f"Generated {len(train_dataset)} training samples and {len(test_dataset)} test samples"
+    )
     print("Sample data:")
-    print("Question:", train_samples[0]['question'])
-    print("Answer:", train_samples[0]['answer'])
+    print("Question:", train_samples[0]["question"])
+    print("Answer:", train_samples[0]["answer"])
