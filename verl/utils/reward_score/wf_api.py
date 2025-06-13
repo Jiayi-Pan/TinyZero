@@ -111,23 +111,21 @@ def compute_score(
 
     log_both("\n🎯 EXPECTED RESPONSE:")
     log_both(json.dumps(expected_response, indent=2))
+    log_both(f"🔍 RAW OUTPUT: {extract_text_after_thinking(solution_str)}")
 
     if answer is None:
-        log_both("\n❌ MODEL RESPONSE: No <final_json> tags found")
-        log_both(
-            f"🔍 RAW OUTPUT: {extract_text_after_thinking(solution_str)}"
-        )  # Last 200 chars
-        log_both(f"⭐ REWARD SCORE: 0.0")
+        log_both("\n❌ No <final_json> tags found")
+        log_both("⭐ REWARD SCORE: 0.0")
         log_both("=" * 80)
         return 0
 
-    log_both(f"\n🤖 MODEL RESPONSE (Raw):")
+    log_both("\n🤖 EXTRACTED RESPONSE (Raw):")
     log_both(answer)
 
     # Try to extract JSON
     api_request = extract_json(answer)
     if not api_request:
-        log_both(f"\n❌ EXTRACTED JSON: Invalid or missing JSON")
+        log_both("\n❌ EXTRACTED JSON: Invalid or missing JSON")
         log_both(f"⭐ REWARD SCORE: {format_score}")
         log_both("=" * 80)
         return format_score
