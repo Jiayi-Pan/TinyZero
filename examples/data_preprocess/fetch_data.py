@@ -5,6 +5,15 @@ from typing import List, Dict
 from tqdm import tqdm
 import argparse
 
+def load_context_from_file(context_file_path: str = "verl/utils/dataset/context.txt") -> str:
+    """Load context content from a text file"""
+    try:
+        with open(context_file_path, 'r', encoding='utf-8') as f:
+            return f.read().strip()
+    except FileNotFoundError:
+        print(f"Warning: Context file {context_file_path} not found. Using fallback context.")
+        return "Workfront API Context - Context file not found"
+
 
 def load_workfront_data(json_file_path: str) -> List[Dict]:
     samples = []
@@ -33,9 +42,10 @@ def format_workfront_api_call(expected_response: Dict) -> str:
     return json.dumps(expected_response, indent=2)
 
 
-def make_prefix(question, template_type="base"):
+def make_prefix(question, template_type="base", , context_file_path="verl/utils/dataset/context.txt"):
     """Create the prompt prefix for API tasks"""
     if template_type == "base":
+        workfront_context = load_context_from_file(context_file_path)
         prefix = f"""You are a helpful AI assistant designed to convert natural language queries into structured JSON commands for querying the Workfront project management system. You use Workfront's custom object names and metadata to do the same using the context given below.
 
 Your role is to interpret a user's natural language request, determine the correct object (objCode like TASK, PROJ, or USER), extract relevant fields (the attributes to display), and construct appropriate filters (conditions the data must satisfy). 
@@ -103,44 +113,9 @@ Answer:
   }}
 }}
 ```
+{workfront_context}
 
- Workfront Object Context You Can Use
-
- Core Objects:
-TASK: Represents individual tasks.
-PROJ: Represents projects.
-USER: Represents users (people in the org).
-
---- PROJECT METADATA ---
-domain_knowledge:|
-  Projects represent the main container of work that is to be completed. A Project may contain many different tasks or issues. Projects have both a plannedCompletionDate 
-  which represents an estimate or planned completion date, and also a actualCompletionDate which represents the actual completion date of the project. If you are looking
-  for when things actually completed use the actualCompletionDate, if you are wanting to know when something is planned to be completed use the plannedCompletionDate.
-  Default Statuses include: Current, Dead, On Hold, Planning, Complete, Requested, Approved, Rejected, and Idea
-
-
---- TASK METADATA ---
-domain_knowledge: |
-  Tasks always belong to a project, so they always have the field projectID even when updating a task or making an assignment. 
-  To update existing tasks, you must include the taskID in the request. 
-  Tasks may also have subtasks, in which case they have a parent task (parentID) and a projectID.
-  Tasks frequently have an assignment to a user, team, or role.
-  Tasks can have both a plannedCompletionDate and a actualCompletionDate - if you want to know the actual date something was completed, use actualCompletionDate.
-  Assignments can be added when creating an task by adding appropriate ids to the assignments array.
-  A task name is always required.
-  To set a Due Date, set the taskConstraint to MFO and the constraintDate to the desired date.  
-  To set a Start Date, set the taskConstraint to MSO and the constraintDate to the desired date.
-  Default statuses include: New, In Progress, and Complete
-  Tasks include a taskNumber.  The task number shows the order the task appears in a list as shown to the user.  The user may referer to a task by its task number instead of its name.
-  If a user refers to a task by its number insetead of its name, then it will need to be search by taskNumber instead of name to find the task id.  i.e. I want to rename task 3 to "New Task Name"
-
---- USER METADATA ---
-
-domain_knowledge: |
-  When searching for a user by name, be sure to check firstName, lastName, and name fields.  
-  Use the OR operator because the name may not appear in all three fields.  
-  Searching by email or username may also be used.
-
+ 
 User: {question}
 Assistant: I'll help you with defining the correct JSON object with the correct obj_code, fields, and filters.
 
