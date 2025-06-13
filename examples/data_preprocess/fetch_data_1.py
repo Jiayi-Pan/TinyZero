@@ -54,8 +54,19 @@ Structure:
 
 The JSON must be wrapped in triple backticks to indicate code formatting.
 
+Your response should follow this format:
 
-
+<answer>
+```json
+{{
+  "objCode": "[TASK|PROJ|USER]",
+  "fields": ["field1", "field2", "..."],
+  "filters": {{
+    "filterKey": "filterValue"
+  }}
+}}
+```
+</answer>
 
  Workfront Object Context You Can Use
 
@@ -101,6 +112,14 @@ Assistant: I'll help you with defining the correct call with the correct ObjCode
 I need to understand the user's request and determine the correct object (objCode like TASK, PROJ, or USER), extract relevant fields (the attributes to display), and construct appropriate filters (conditions the data must satisfy based on the metadata provided).
 </thinking>
 
+<answer>
+```json
+{{
+  "objCode": "",
+  "fields": [],
+  "filters": {{}}
+}}
+```
 </answer>"""
     elif template_type == "qwen-instruct":
         prefix = f"""<|im_start|>system
@@ -172,6 +191,14 @@ I'll help you with defining the correct call with the correct ObjCode, Fields, a
 I need to understand the user's request and determine the correct object (objCode like TASK, PROJ, or USER), extract relevant fields (the attributes to display), and construct appropriate filters (conditions the data must satisfy based on the metadata provided) and respond with the expected JSON response.
 </thinking>
 
+<answer>
+```json
+{{{{
+  "objCode": "",
+  "fields": [],
+  "filters": {{{{}}}}
+}}}}
+```
 </answer>"""
     return prefix
 
