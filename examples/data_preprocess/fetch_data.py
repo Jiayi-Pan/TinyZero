@@ -215,7 +215,9 @@ I need to understand the user's request and determine:
 4. How to structure the response to match their exact needs
 </thinking>
 
+"""
     return prefix
+
 
 
 if __name__ == "__main__":
