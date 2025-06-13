@@ -40,29 +40,22 @@ def make_prefix(question, template_type="base"):
 
 Your role is to interpret a user's natural language request, determine the correct object (objCode like TASK, PROJ, or USER), extract relevant fields (the attributes to display), and construct appropriate filters (conditions the data must satisfy). 
 
+You must respond with a JSON object wrapped in <answer> tags and formatted with triple backticks.
 
-You will take the user's natural language prompt and finally give a structured JSON response after understanding context with the following structure:
+Required JSON structure:
+- objCode: Must be "TASK", "PROJ", or "USER" 
+- fields: Array of field names to retrieve (always include "ID" and "name")
+- filters: Object containing filter conditions
 
-Structure:
-```json
-{{
-  'objCode': 'TASK | PROJ | USER',
-  'fields': [],
-  'filters': {{}}
-}}
-```
-
-The JSON must be wrapped in triple backticks to indicate code formatting.
-
-Your response should follow this format:
+Your response format must be:
 
 <answer>
 ```json
 {{
-  "objCode": "[TASK|PROJ|USER]",
-  "fields": ["field1", "field2", "..."],
+  "objCode": "TASK|PROJ|USER",
+  "fields": ["ID", "name", "other_relevant_fields"],
   "filters": {{
-    "filterKey": "filterValue"
+    "filter_key": "filter_value"
   }}
 }}
 ```
@@ -106,42 +99,45 @@ domain_knowledge: |
   Searching by email or username may also be used.
 
 User: {question}
-Assistant: I'll help you with defining the correct call with the correct ObjCode, Fields, and Filters.
-
-<thinking>
-I need to understand the user's request and determine the correct object (objCode like TASK, PROJ, or USER), extract relevant fields (the attributes to display), and construct appropriate filters (conditions the data must satisfy based on the metadata provided).
-</thinking>
+Assistant: I'll analyze your request and provide the appropriate Workfront API call structure.
 
 <answer>
 ```json
 {{
-  "objCode": "",
-  "fields": [],
-  "filters": {{}}
+  "objCode": "DETERMINE_FROM_QUESTION",
+  "fields": ["ID", "name", "ADD_RELEVANT_FIELDS"],
+  "filters": {{
+    "ADD_APPROPRIATE_FILTERS": "BASED_ON_QUESTION"
+  }}
 }}
 ```
 </answer>"""
     elif template_type == "qwen-instruct":
         prefix = f"""<|im_start|>system
-You are a helpful AI assistant designed to convert natural language queries into structured JSON commands for querying the Workfront project management system. You use Workfront’s custom object names and metadata to do the same using the context given below.
+You are a helpful AI assistant designed to convert natural language queries into structured JSON commands for querying the Workfront project management system. You use Workfront's custom object names and metadata to do the same using the context given below.
 
-Your role is to interpret a user’s natural language request, determine the correct object (objCode like TASK, PROJ, or USER), extract relevant fields (the attributes to display), and construct appropriate filters (conditions the data must satisfy). Your output should follow this structure:
+Your role is to interpret a user's natural language request, determine the correct object (objCode like TASK, PROJ, or USER), extract relevant fields (the attributes to display), and construct appropriate filters (conditions the data must satisfy).
 
-{{{{
-  "prompt": "What are all the tasks with high priority due next week?",
-  "expected_response": {{{{
-    "tool": "fetch_data",
-    "objCode": "TASK",
-    "fields": ["ID", "name", "priority", "plannedCompletionDate"],
-    "filters": {{{{
-        "priority": 3,
-        "actualCompletionDate_Mod": "isnull",
-        "plannedCompletionDate": "$$TODAYb+1w",
-        "plannedCompletionDate_Mod": "between",
-        "plannedCompletionDate_Range": "$$TODAYe+1w"
-    }}}}
-  }}}}
-}}}}
+You must respond with a JSON object wrapped in <answer> tags and formatted with triple backticks.
+
+Required JSON structure:
+- objCode: Must be "TASK", "PROJ", or "USER" 
+- fields: Array of field names to retrieve (always include "ID" and "name")
+- filters: Object containing filter conditions
+
+Your response format must be:
+
+<answer>
+```json
+{{
+  "objCode": "TASK|PROJ|USER",
+  "fields": ["ID", "name", "other_relevant_fields"],
+  "filters": {{
+    "filter_key": "filter_value"
+  }}
+}}
+```
+</answer>
 
  Workfront Object Context You Can Use
 
@@ -185,19 +181,17 @@ domain_knowledge: |
 <|im_start|>user
 {question}<|im_end|>
 <|im_start|>assistant
-I'll help you with defining the correct call with the correct ObjCode, Fields, and Filters.
-
-<thinking>
-I need to understand the user's request and determine the correct object (objCode like TASK, PROJ, or USER), extract relevant fields (the attributes to display), and construct appropriate filters (conditions the data must satisfy based on the metadata provided) and respond with the expected JSON response.
-</thinking>
+I'll analyze your request and provide the appropriate Workfront API call structure.
 
 <answer>
 ```json
-{{{{
-  "objCode": "",
-  "fields": [],
-  "filters": {{{{}}}}
-}}}}
+{{
+  "objCode": "DETERMINE_FROM_QUESTION",
+  "fields": ["ID", "name", "ADD_RELEVANT_FIELDS"],
+  "filters": {{
+    "ADD_APPROPRIATE_FILTERS": "BASED_ON_QUESTION"
+  }}
+}}
 ```
 </answer>"""
     return prefix
