@@ -213,7 +213,7 @@ def compute_score(
     # 2. fields scoring (0.3 total points)
     if "fields" in api_request:
         model_fields = api_request.get("fields", [])
-        if model_fields:
+        if model_fields is not None:
             model_fields = set(model_fields)
         expected_fields = set(expected_response.get("fields", []))
 
