@@ -26,6 +26,15 @@ def extract_answer(solution_str):
     return final_answer
 
 
+def extract_text_after_thinking(solution_str):
+    # Extract all text after the </thinking> tag
+    thinking_end = solution_str.find("</thinking>")
+    if thinking_end == -1:
+        return solution_str
+    position_to_slice = thinking_end + len("</thinking>")
+    return solution_str[position_to_slice:].strip()
+
+
 def extract_json(answer):
     """Extract ```json{}``` from the answer string."""
     json_pattern = r"```json\s*(.*?)\s*```"
@@ -101,12 +110,14 @@ def compute_score(
         question = solution_str.split("User:")[-1].split("Assistant:")[0].strip()
         log_both(f"📝 QUESTION: {question}")
 
-    log_both(f"\n🎯 EXPECTED RESPONSE:")
+    log_both("\n🎯 EXPECTED RESPONSE:")
     log_both(json.dumps(expected_response, indent=2))
 
     if answer is None:
-        log_both(f"\n❌ MODEL RESPONSE: No <answer> tags found")
-        log_both(f"🔍 RAW OUTPUT: {solution_str[-200:]}")  # Last 200 chars
+        log_both("\n❌ MODEL RESPONSE: No <final_json> tags found")
+        log_both(
+            f"🔍 RAW OUTPUT: {extract_text_after_thinking(solution_str)}"
+        )  # Last 200 chars
         log_both(f"⭐ REWARD SCORE: 0.0")
         log_both("=" * 80)
         return 0
