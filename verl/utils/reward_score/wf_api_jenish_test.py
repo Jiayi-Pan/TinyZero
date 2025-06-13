@@ -105,8 +105,8 @@ def compute_score(solution_str, ground_truth, method="strict", format_score=0.1,
         log_both("="*80)
         return format_score
 
-    log_both(f"\n✅ EXTRACTED JSON:")
-    log_both(json.dumps(api_request, indent=2))
+    # log_both(f"\n✅ EXTRACTED JSON:")
+    # log_both(json.dumps(api_request, indent=2))
     
     # Scoring logic
     score_breakdown = []
