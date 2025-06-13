@@ -14,10 +14,9 @@ def extract_answer(solution_str):
         solution_str = solution_str.split("<|im_start|>assistant", 1)[1]
     else:
         return None
-    solution_str = solution_str.split("\n")[-1]
 
     final_json_pattern = r"<final_json>(.*?)</final_json>"
-    match = re.finditer(final_json_pattern, solution_str)
+    match = re.finditer(final_json_pattern, solution_str, re.DOTALL)
     matches = list(match)
     if matches:
         final_answer = matches[-1].group(1).strip()
