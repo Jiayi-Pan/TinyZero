@@ -37,7 +37,7 @@ def extract_text_after_thinking(solution_str):
 def extract_json(answer):
     """Extract ```json{}``` from the answer string."""
     json_pattern = r"```json\s*(.*?)\s*```"
-    match = re.search(json_pattern, answer)
+    match = re.search(json_pattern, answer, re.DOTALL)
     if match:
         json_str = match.group(1).strip()
         try:
