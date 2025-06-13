@@ -6,7 +6,7 @@ import datetime
 
 
 def extract_answer(solution_str):
-    print("Solution string: ", solution_str)
+    # print("Solution string: ", solution_str)
     """Extract the API request from the solution string."""
     # Remove everything before the first "Assistant:"
     if "Assistant:" in solution_str:
@@ -16,7 +16,8 @@ def extract_answer(solution_str):
     else:
         return None
     
-
+    return solution_str
+    
     answer_pattern = r"<answer>(.*?)</answer>"
     match = re.search(answer_pattern, solution_str, re.DOTALL)
     if match:
