@@ -52,7 +52,8 @@ def make_prefix(question, template_type="base", context_file_path="verl/utils/da
 Your role is to interpret a user's natural language request, determine the correct object (objCode like TASK, PROJ, or USER), extract relevant fields (the attributes to display), and construct appropriate filters (conditions the data must satisfy). 
 
 
-You will take the user's natural language prompt and finally give a structured JSON response after understanding context with the following structure and ALWAYS include just the final JSON in <final_json> tags:
+You will take the user's natural language prompt and finally give a structured JSON response after understanding context with the following structure and ALWAYS include just the final JSON with the correct json structure in <final_json> tags. The tags should always be called <final_json> and always inside tags use ```json``` to indicate the json structure. 
+USE STRUCTURE EXACTLY LIKE BELOW 
 
 Structure:
 <final_json>
