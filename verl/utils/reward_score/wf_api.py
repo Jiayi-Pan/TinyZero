@@ -26,11 +26,9 @@ def extract_answer(solution_str):
 
 
 def extract_text_after_thinking(solution_str):
-    # Extract all text after the </thinking> tag
-    thinking_end = solution_str.find("</thinking>")
-    if thinking_end == -1:
-        return solution_str
-    position_to_slice = thinking_end + len("</thinking>")
+    # Extract all text after the <thinking> tag
+    thinking_start = solution_str.find("<thinking>")
+    position_to_slice = thinking_start
     return solution_str[position_to_slice:].strip()
 
 
