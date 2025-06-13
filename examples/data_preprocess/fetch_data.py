@@ -42,30 +42,30 @@ def format_workfront_api_call(expected_response: Dict) -> str:
     return json.dumps(expected_response, indent=2)
 
 
-def make_prefix(question, template_type="base", , context_file_path="verl/utils/dataset/context.txt"):
+def make_prefix(question, template_type="base", context_file_path="verl/utils/dataset/context.txt"):
     """Create the prompt prefix for API tasks"""
+    workfront_context = load_context_from_file(context_file_path)
+    
     if template_type == "base":
-        workfront_context = load_context_from_file(context_file_path)
         prefix = f"""You are a helpful AI assistant designed to convert natural language queries into structured JSON commands for querying the Workfront project management system. You use Workfront's custom object names and metadata to do the same using the context given below.
 
 Your role is to interpret a user's natural language request, determine the correct object (objCode like TASK, PROJ, or USER), extract relevant fields (the attributes to display), and construct appropriate filters (conditions the data must satisfy). 
 
-IMPORTANT: You must analyze the user's query carefully and return a response that specifically matches their request. Do not return generic responses.
 
-You will take the user's natural language prompt and give a structured JSON response with the following structure:
+You will take the user's natural language prompt and finally give a structured JSON response after understanding context with the following structure:
 
 Structure:
 ```json
 {{
-  'objCode': 'TASK | PROJ | USER',  // Choose based on what the user is asking about
-  'fields': [],  // Include ALL relevant fields mentioned in the query
-  'filters': {{}}  // Include ALL conditions mentioned in the query
+  "objCode": "TASK | PROJ | USER", // Choose based on what the user is asking about
+  "fields": [],        // Include ALL relevant fields mentioned in the query      
+  "filters": {{}} // Include ALL conditions mentioned in the query
 }}
 ```
 
 The JSON must be wrapped in triple backticks to indicate code formatting.
 
-Here are some examples:
+Heres are some examples:
 
 Example 1:
 User Prompt: What are all the tasks with high priority due next week?
@@ -113,9 +113,9 @@ Answer:
   }}
 }}
 ```
+
 {workfront_context}
 
- 
 User: {question}
 Assistant: I'll help you with defining the correct JSON object with the correct obj_code, fields, and filters.
 
@@ -140,11 +140,11 @@ You will take the user's natural language prompt and give a structured JSON resp
 
 Structure:
 ```json
-{{
+{{{{
   'objCode': 'TASK | PROJ | USER',  // Choose based on what the user is asking about
   'fields': [],  // Include ALL relevant fields mentioned in the query
-  'filters': {{}}  // Include ALL conditions mentioned in the query
-}}
+  'filters': {{{{}}}}  // Include ALL conditions mentioned in the query
+}}}}
 ```
 
 The JSON must be wrapped in triple backticks to indicate code formatting.
@@ -156,17 +156,17 @@ User Prompt: What are all the tasks with high priority due next week?
 
 Answer:
 ```json
-{{
+{{{{
   "objCode": "TASK",
   "fields": ["ID", "name", "priority", "plannedCompletionDate"],
-  "filters": {{
+  "filters": {{{{
         "priority": 3,
         "actualCompletionDate_Mod": "isnull",
         "plannedCompletionDate": "$$TODAYb+1w",
         "plannedCompletionDate_Mod": "between",
         "plannedCompletionDate_Range": "$$TODAYe+1w"
-  }}
-}}
+  }}}}
+}}}}
 ```
 
 Example 2:
@@ -174,13 +174,13 @@ User Prompt: Show me all projects that are currently on hold
 
 Answer:
 ```json
-{{
+{{{{
   "objCode": "PROJ",
   "fields": ["ID", "name", "status", "plannedCompletionDate"],
-  "filters": {{
+  "filters": {{{{
         "status": "OHD"
-  }}
-}}
+  }}}}
+}}}}
 ```
 
 Example 3:
@@ -188,53 +188,17 @@ User Prompt: Find users with email addresses containing '@company.com'
 
 Answer:
 ```json
-{{
+{{{{
   "objCode": "USER",
   "fields": ["ID", "name", "emailAddr", "username"],
-  "filters": {{
+  "filters": {{{{
         "emailAddr_Mod": "cicontains",
         "emailAddr": "@company.com"
-  }}
-}}
+  }}}}
+}}}}
 ```
 
- Workfront Object Context You Can Use
-
- Core Objects:
-TASK: Represents individual tasks.
-PROJ: Represents projects.
-USER: Represents users (people in the org).
-
---- PROJECT METADATA ---
-domain_knowledge:|
-  Projects represent the main container of work that is to be completed. A Project may contain many different tasks or issues. Projects have both a plannedCompletionDate 
-  which represents an estimate or planned completion date, and also a actualCompletionDate which represents the actual completion date of the project. If you are looking
-  for when things actually completed use the actualCompletionDate, if you are wanting to know when something is planned to be completed use the plannedCompletionDate.
-  Default Statuses include: Current, Dead, On Hold, Planning, Complete, Requested, Approved, Rejected, and Idea
-
-
---- TASK METADATA ---
-domain_knowledge: |
-  Tasks always belong to a project, so they always have the field projectID even when updating a task or making an assignment. 
-  To update existing tasks, you must include the taskID in the request. 
-  Tasks may also have subtasks, in which case they have a parent task (parentID) and a projectID.
-  Tasks frequently have an assignment to a user, team, or role.
-  Tasks can have both a plannedCompletionDate and a actualCompletionDate - if you want to know the actual date something was completed, use actualCompletionDate.
-  Assignments can be added when creating an task by adding appropriate ids to the assignments array.
-  A task name is always required.
-  To set a Due Date, set the taskConstraint to MFO and the constraintDate to the desired date.  
-  To set a Start Date, set the taskConstraint to MSO and the constraintDate to the desired date.
-  Default statuses include: New, In Progress, and Complete
-  Tasks include a taskNumber.  The task number shows the order the task appears in a list as shown to the user.  The user may referer to a task by its task number instead of its name.
-  If a user refers to a task by its number insetead of its name, then it will need to be search by taskNumber instead of name to find the task id.  i.e. I want to rename task 3 to "New Task Name"
-
---- USER METADATA ---
-
-domain_knowledge: |
-  When searching for a user by name, be sure to check firstName, lastName, and name fields.  
-  Use the OR operator because the name may not appear in all three fields.  
-  Searching by email or username may also be used.
-
+{workfront_context}
 
 <|im_end|>
 <|im_start|>user
