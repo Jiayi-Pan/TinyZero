@@ -140,9 +140,7 @@ I need to understand the user's request and determine:
 2. What specific fields they need to see
 3. What conditions (filters) they want to apply
 4. How to structure the response to match their exact needs
-</thinking>
-
-<answer>"""
+"""
     elif template_type == "qwen-instruct":
         prefix = f"""<|im_start|>system
 You are a helpful AI assistant designed to convert natural language queries into structured JSON commands for querying the Workfront project management system. You use Workfront's custom object names and metadata to do the same using the context given below.
