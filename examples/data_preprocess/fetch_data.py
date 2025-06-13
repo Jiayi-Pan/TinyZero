@@ -5,13 +5,18 @@ from typing import List, Dict
 from tqdm import tqdm
 import argparse
 
-def load_context_from_file(context_file_path: str = "verl/utils/dataset/context.txt") -> str:
+
+def load_context_from_file(
+    context_file_path: str = "verl/utils/dataset/context.txt",
+) -> str:
     """Load context content from a text file"""
     try:
-        with open(context_file_path, 'r', encoding='utf-8') as f:
+        with open(context_file_path, "r", encoding="utf-8") as f:
             return f.read().strip()
     except FileNotFoundError:
-        print(f"Warning: Context file {context_file_path} not found. Using fallback context.")
+        print(
+            f"Warning: Context file {context_file_path} not found. Using fallback context."
+        )
         return "Workfront API Context - Context file not found"
 
 
@@ -42,10 +47,12 @@ def format_workfront_api_call(expected_response: Dict) -> str:
     return json.dumps(expected_response, indent=2)
 
 
-def make_prefix(question, template_type="base", context_file_path="verl/utils/dataset/context.txt"):
+def make_prefix(
+    question, template_type="base", context_file_path="verl/utils/dataset/context.txt"
+):
     """Create the prompt prefix for API tasks"""
     workfront_context = load_context_from_file(context_file_path)
-    
+
     if template_type == "base":
         prefix = f"""You are a helpful AI assistant designed to convert natural language queries into structured JSON commands for querying the Workfront project management system. You use Workfront's custom object names and metadata to do the same using the context given below.
 
@@ -72,7 +79,8 @@ Heres are some examples:
 Example 1:
 User Prompt: What are all the tasks with high priority due next week?
 
-Answer:
+Assistant:
+<final_json>
 ```json
 {{
   "objCode": "TASK",
@@ -86,11 +94,13 @@ Answer:
   }}
 }}
 ```
+</final_json>
 
 Example 2:
 User Prompt: Show me all projects that are currently on hold
 
-Answer:
+Assistant:
+<final_json>
 ```json
 {{
   "objCode": "PROJ",
@@ -100,11 +110,13 @@ Answer:
   }}
 }}
 ```
+</final_json>
 
 Example 3:
 User Prompt: Find users with email addresses containing '@company.com'
 
-Answer:
+Assistant:
+<final_json>
 ```json
 {{
   "objCode": "USER",
@@ -115,6 +127,7 @@ Answer:
   }}
 }}
 ```
+</final_json>
 
 {workfront_context}
 
@@ -216,7 +229,6 @@ I need to understand the user's request and determine:
 
 """
     return prefix
-
 
 
 if __name__ == "__main__":

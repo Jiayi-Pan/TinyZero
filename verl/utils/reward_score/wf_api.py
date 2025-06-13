@@ -14,16 +14,24 @@ def extract_answer(solution_str):
         solution_str = solution_str.split("<|im_start|>assistant", 1)[1]
     else:
         return None
-    solution_str = solution_str.split("\n")[-1]
 
     final_json_pattern = r"<final_json>(.*?)</final_json>"
-    match = re.finditer(final_json_pattern, solution_str)
+    match = re.finditer(final_json_pattern, solution_str, re.DOTALL)
     matches = list(match)
     if matches:
         final_answer = matches[-1].group(1).strip()
     else:
         final_answer = None
     return final_answer
+
+
+def extract_text_after_thinking(solution_str):
+    # Extract all text after the </thinking> tag
+    thinking_end = solution_str.find("</thinking>")
+    if thinking_end == -1:
+        return solution_str
+    position_to_slice = thinking_end + len("</thinking>")
+    return solution_str[position_to_slice:].strip()
 
 
 def extract_json(answer):
@@ -101,12 +109,14 @@ def compute_score(
         question = solution_str.split("User:")[-1].split("Assistant:")[0].strip()
         log_both(f"📝 QUESTION: {question}")
 
-    log_both(f"\n🎯 EXPECTED RESPONSE:")
+    log_both("\n🎯 EXPECTED RESPONSE:")
     log_both(json.dumps(expected_response, indent=2))
 
     if answer is None:
-        log_both(f"\n❌ MODEL RESPONSE: No <answer> tags found")
-        log_both(f"🔍 RAW OUTPUT: {solution_str[-200:]}")  # Last 200 chars
+        log_both("\n❌ MODEL RESPONSE: No <final_json> tags found")
+        log_both(
+            f"🔍 RAW OUTPUT: {extract_text_after_thinking(solution_str)}"
+        )  # Last 200 chars
         log_both(f"⭐ REWARD SCORE: 0.0")
         log_both("=" * 80)
         return 0
