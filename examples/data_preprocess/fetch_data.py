@@ -40,22 +40,24 @@ def make_prefix(question, template_type="base"):
 
 Your role is to interpret a user's natural language request, determine the correct object (objCode like TASK, PROJ, or USER), extract relevant fields (the attributes to display), and construct appropriate filters (conditions the data must satisfy). 
 
+IMPORTANT: You must analyze the user's query carefully and return a response that specifically matches their request. Do not return generic responses.
 
-You will take the user's natural language prompt and finally give a structured JSON response after understanding context with the following structure:
+You will take the user's natural language prompt and give a structured JSON response with the following structure:
 
 Structure:
 ```json
 {{
-  'objCode': 'TASK | PROJ | USER',
-  'fields': [],
-  'filters': {{}}
+  'objCode': 'TASK | PROJ | USER',  // Choose based on what the user is asking about
+  'fields': [],  // Include ALL relevant fields mentioned in the query
+  'filters': {{}}  // Include ALL conditions mentioned in the query
 }}
 ```
 
 The JSON must be wrapped in triple backticks to indicate code formatting.
 
-Here's an example:
+Here are some examples:
 
+Example 1:
 User Prompt: What are all the tasks with high priority due next week?
 
 Answer:
@@ -73,6 +75,34 @@ Answer:
 }}
 ```
 
+Example 2:
+User Prompt: Show me all projects that are currently on hold
+
+Answer:
+```json
+{{
+  "objCode": "PROJ",
+  "fields": ["ID", "name", "status", "plannedCompletionDate"],
+  "filters": {{
+        "status": "OHD"
+  }}
+}}
+```
+
+Example 3:
+User Prompt: Find users with email addresses containing '@company.com'
+
+Answer:
+```json
+{{
+  "objCode": "USER",
+  "fields": ["ID", "name", "emailAddr", "username"],
+  "filters": {{
+        "emailAddr_Mod": "cicontains",
+        "emailAddr": "@company.com"
+  }}
+}}
+```
 
  Workfront Object Context You Can Use
 
@@ -115,15 +145,19 @@ User: {question}
 Assistant: I'll help you with defining the correct call with the correct ObjCode, Fields, and Filters.
 
 <thinking>
-I need to understand the user's request and determine the correct object (objCode like TASK, PROJ, or USER), extract relevant fields (the attributes to display), and construct appropriate filters (conditions the data must satisfy based on the metadata provided).
+I need to understand the user's request and determine:
+1. Which object type (TASK, PROJ, or USER) they are asking about
+2. What specific fields they need to see
+3. What conditions (filters) they want to apply
+4. How to structure the response to match their exact needs
 </thinking>
 
 <answer>"""
     elif template_type == "qwen-instruct":
         prefix = f"""<|im_start|>system
-You are a helpful AI assistant designed to convert natural language queries into structured JSON commands for querying the Workfront project management system. You use Workfront’s custom object names and metadata to do the same using the context given below.
+You are a helpful AI assistant designed to convert natural language queries into structured JSON commands for querying the Workfront project management system. You use Workfront's custom object names and metadata to do the same using the context given below.
 
-Your role is to interpret a user’s natural language request, determine the correct object (objCode like TASK, PROJ, or USER), extract relevant fields (the attributes to display), and construct appropriate filters (conditions the data must satisfy). Your output should follow this structure:
+Your role is to interpret a user's natural language request, determine the correct object (objCode like TASK, PROJ, or USER), extract relevant fields (the attributes to display), and construct appropriate filters (conditions the data must satisfy). Your output should follow this structure:
 
 {{{{
   "prompt": "What are all the tasks with high priority due next week?",
@@ -186,7 +220,11 @@ domain_knowledge: |
 I'll help you with defining the correct call with the correct ObjCode, Fields, and Filters.
 
 <thinking>
-I need to understand the user's request and determine the correct object (objCode like TASK, PROJ, or USER), extract relevant fields (the attributes to display), and construct appropriate filters (conditions the data must satisfy based on the metadata provided) and respond with the expected JSON response.
+I need to understand the user's request and determine:
+1. Which object type (TASK, PROJ, or USER) they are asking about
+2. What specific fields they need to see
+3. What conditions (filters) they want to apply
+4. How to structure the response to match their exact needs
 </thinking>
 
 <answer>"""
