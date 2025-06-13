@@ -40,12 +40,20 @@ def compute_score(solution_str, ground_truth, method="strict", format_score=0.1,
 
     Args:
         solution_str: the solution text from the model
-        ground_truth: dictionary containing expected API call
+        ground_truth: dictionary containing expected API call (or JSON string)
         method: the method to extract the solution
         format_score: the score for correct format but wrong answer
         score: the score for the correct answer
     """
-    expected_response = ground_truth
+    # Handle case where ground_truth is a JSON string
+    if isinstance(ground_truth, str):
+        try:
+            expected_response = json.loads(ground_truth)
+        except json.JSONDecodeError:
+            print(f"❌ ERROR: Invalid ground_truth JSON: {ground_truth}")
+            return 0
+    else:
+        expected_response = ground_truth
     
     # Extract model's answer
     answer = extract_answer(solution_str)
