@@ -59,10 +59,11 @@ def compute_score(
         score: the score for the correct answer
     """
     expected_response = ground_truth
+    print("Expected response from Jenish is ",expected_response)
 
     answer = extract_answer(solution_str)
-    # do_print = random.randint(1, 64) == 1
-    do_print = True
+    do_print = random.randint(1, 64) == 1
+    # do_print = True
 
     if do_print:
         print("--------------------------------")
