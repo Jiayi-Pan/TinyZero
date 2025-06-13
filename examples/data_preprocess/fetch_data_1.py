@@ -48,16 +48,9 @@ Required JSON structure:
 - filters: Object containing filter conditions
 
 Your response format must be:
-
 <answer>
 ```json
-{{
-  "objCode": "TASK|PROJ|USER",
-  "fields": ["ID", "name", "other_relevant_fields"],
-  "filters": {{
-    "filter_key": "filter_value"
-  }}
-}}
+{{JSON_OBJECT_HERE}}
 ```
 </answer>
 
@@ -99,19 +92,7 @@ domain_knowledge: |
   Searching by email or username may also be used.
 
 User: {question}
-Assistant: I'll analyze your request and provide the appropriate Workfront API call structure.
-
-<answer>
-```json
-{{
-  "objCode": "DETERMINE_FROM_QUESTION",
-  "fields": ["ID", "name", "ADD_RELEVANT_FIELDS"],
-  "filters": {{
-    "ADD_APPROPRIATE_FILTERS": "BASED_ON_QUESTION"
-  }}
-}}
-```
-</answer>"""
+Assistant: I'll analyze your request and provide the appropriate Workfront API call structure."""
     elif template_type == "qwen-instruct":
         prefix = f"""<|im_start|>system
 You are a helpful AI assistant designed to convert natural language queries into structured JSON commands for querying the Workfront project management system. You use Workfront's custom object names and metadata to do the same using the context given below.
@@ -126,16 +107,9 @@ Required JSON structure:
 - filters: Object containing filter conditions
 
 Your response format must be:
-
 <answer>
 ```json
-{{
-  "objCode": "TASK|PROJ|USER",
-  "fields": ["ID", "name", "other_relevant_fields"],
-  "filters": {{
-    "filter_key": "filter_value"
-  }}
-}}
+{{JSON_OBJECT_HERE}}
 ```
 </answer>
 
@@ -181,19 +155,7 @@ domain_knowledge: |
 <|im_start|>user
 {question}<|im_end|>
 <|im_start|>assistant
-I'll analyze your request and provide the appropriate Workfront API call structure.
-
-<answer>
-```json
-{{
-  "objCode": "DETERMINE_FROM_QUESTION",
-  "fields": ["ID", "name", "ADD_RELEVANT_FIELDS"],
-  "filters": {{
-    "ADD_APPROPRIATE_FILTERS": "BASED_ON_QUESTION"
-  }}
-}}
-```
-</answer>"""
+I'll analyze your request and provide the appropriate Workfront API call structure."""
     return prefix
 
 
