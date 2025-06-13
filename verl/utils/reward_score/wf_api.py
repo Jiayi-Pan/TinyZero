@@ -18,6 +18,9 @@ def extract_answer(solution_str):
     final_json_pattern = r"<final_json>(.*?)</final_json>"
     match = re.finditer(final_json_pattern, solution_str, re.DOTALL)
     matches = list(match)
+    if len(matches) < 4:
+        return None
+
     if matches:
         final_answer = matches[-1].group(1).strip()
     else:
