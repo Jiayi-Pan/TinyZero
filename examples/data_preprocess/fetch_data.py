@@ -52,9 +52,10 @@ def make_prefix(question, template_type="base", context_file_path="verl/utils/da
 Your role is to interpret a user's natural language request, determine the correct object (objCode like TASK, PROJ, or USER), extract relevant fields (the attributes to display), and construct appropriate filters (conditions the data must satisfy). 
 
 
-You will take the user's natural language prompt and finally give a structured JSON response after understanding context with the following structure:
+You will take the user's natural language prompt and finally give a structured JSON response after understanding context with the following structure and ALWAYS include just the final JSON in <final_json> tags:
 
 Structure:
+<final_json>
 ```json
 {{
   "objCode": "TASK | PROJ | USER", // Choose based on what the user is asking about
@@ -62,7 +63,7 @@ Structure:
   "filters": {{}} // Include ALL conditions mentioned in the query
 }}
 ```
-
+</final_json>
 The JSON must be wrapped in triple backticks to indicate code formatting.
 
 Heres are some examples:
@@ -214,7 +215,6 @@ I need to understand the user's request and determine:
 4. How to structure the response to match their exact needs
 </thinking>
 
-<answer>"""
     return prefix
 
 

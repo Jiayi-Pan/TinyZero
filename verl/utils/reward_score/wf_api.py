@@ -14,8 +14,8 @@ def extract_answer(solution_str):
         return None
     solution_str = solution_str.split("\n")[-1]
 
-    answer_pattern = r"<answer>(.*?)</answer>"
-    match = re.finditer(answer_pattern, solution_str)
+    final_json_pattern = r"<final_json>(.*?)</final_json>"
+    match = re.finditer(final_json_pattern, solution_str)
     matches = list(match)
     if matches:
         final_answer = matches[-1].group(1).strip()
