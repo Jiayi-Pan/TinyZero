@@ -142,7 +142,7 @@ domain_knowledge: |
   Searching by email or username may also be used.
 
 User: {question}
-Assistant: I'll help you with defining the correct call with the correct ObjCode, Fields, and Filters.
+Assistant: I'll help you with defining the correct JSON object with the correct obj_code, fields, and filters.
 
 <thinking>
 I need to understand the user's request and determine:
@@ -152,38 +152,76 @@ I need to understand the user's request and determine:
 4. How to structure the response to match their exact needs
 </thinking>
 
-<answer>
-```json
-{{
-  "objCode": "REPLACE_WITH_CORRECT_TYPE",
-  "fields": ["ID", "name", "add_relevant_fields"],
-  "filters": {{
-    "add_appropriate_filters": "based_on_query"
-  }}
-}}
-```
-</answer>"""
+<answer>"""
     elif template_type == "qwen-instruct":
         prefix = f"""<|im_start|>system
 You are a helpful AI assistant designed to convert natural language queries into structured JSON commands for querying the Workfront project management system. You use Workfront's custom object names and metadata to do the same using the context given below.
 
-Your role is to interpret a user's natural language request, determine the correct object (objCode like TASK, PROJ, or USER), extract relevant fields (the attributes to display), and construct appropriate filters (conditions the data must satisfy). Your output should follow this structure:
+Your role is to interpret a user's natural language request, determine the correct object (objCode like TASK, PROJ, or USER), extract relevant fields (the attributes to display), and construct appropriate filters (conditions the data must satisfy). 
 
-{{{{
-  "prompt": "What are all the tasks with high priority due next week?",
-  "expected_response": {{{{
-    "tool": "fetch_data",
-    "objCode": "TASK",
-    "fields": ["ID", "name", "priority", "plannedCompletionDate"],
-    "filters": {{{{
+IMPORTANT: You must analyze the user's query carefully and return a response that specifically matches their request. Do not return generic responses.
+
+You will take the user's natural language prompt and give a structured JSON response with the following structure:
+
+Structure:
+```json
+{{
+  'objCode': 'TASK | PROJ | USER',  // Choose based on what the user is asking about
+  'fields': [],  // Include ALL relevant fields mentioned in the query
+  'filters': {{}}  // Include ALL conditions mentioned in the query
+}}
+```
+
+The JSON must be wrapped in triple backticks to indicate code formatting.
+
+Here are some examples:
+
+Example 1:
+User Prompt: What are all the tasks with high priority due next week?
+
+Answer:
+```json
+{{
+  "objCode": "TASK",
+  "fields": ["ID", "name", "priority", "plannedCompletionDate"],
+  "filters": {{
         "priority": 3,
         "actualCompletionDate_Mod": "isnull",
         "plannedCompletionDate": "$$TODAYb+1w",
         "plannedCompletionDate_Mod": "between",
         "plannedCompletionDate_Range": "$$TODAYe+1w"
-    }}}}
-  }}}}
-}}}}
+  }}
+}}
+```
+
+Example 2:
+User Prompt: Show me all projects that are currently on hold
+
+Answer:
+```json
+{{
+  "objCode": "PROJ",
+  "fields": ["ID", "name", "status", "plannedCompletionDate"],
+  "filters": {{
+        "status": "OHD"
+  }}
+}}
+```
+
+Example 3:
+User Prompt: Find users with email addresses containing '@company.com'
+
+Answer:
+```json
+{{
+  "objCode": "USER",
+  "fields": ["ID", "name", "emailAddr", "username"],
+  "filters": {{
+        "emailAddr_Mod": "cicontains",
+        "emailAddr": "@company.com"
+  }}
+}}
+```
 
  Workfront Object Context You Can Use
 
@@ -222,12 +260,12 @@ domain_knowledge: |
   Use the OR operator because the name may not appear in all three fields.  
   Searching by email or username may also be used.
 
-  
+
 <|im_end|>
 <|im_start|>user
 {question}<|im_end|>
 <|im_start|>assistant
-I'll help you with defining the correct call with the correct ObjCode, Fields, and Filters.
+I'll help you with defining the correct JSON object with the correct obj_code, fields, and filters.
 
 <thinking>
 I need to understand the user's request and determine:
@@ -237,17 +275,7 @@ I need to understand the user's request and determine:
 4. How to structure the response to match their exact needs
 </thinking>
 
-<answer>
-```json
-{{
-  "objCode": "REPLACE_WITH_CORRECT_TYPE",
-  "fields": ["ID", "name", "add_relevant_fields"],
-  "filters": {{
-    "add_appropriate_filters": "based_on_query"
-  }}
-}}
-```
-</answer>"""
+<answer>"""
     return prefix
 
 
