@@ -48,10 +48,19 @@ def format_workfront_api_call(expected_response: Dict) -> str:
 
 
 def make_prefix(
-    question, template_type="base", context_file_path="verl/utils/dataset/context.txt"
+    question,
+    template_type="base",
+    obj_code="PROJ",
+    context_file_path="verl/utils/dataset/context.txt",
 ):
     """Create the prompt prefix for API tasks"""
     workfront_context = load_context_from_file(context_file_path)
+    obj_code_contexts = {
+        "PROJ": load_context_from_file("verl/utils/dataset/proj_context.txt"),
+        "USER": load_context_from_file("verl/utils/dataset/user_context.txt"),
+        "TASK": load_context_from_file("verl/utils/dataset/task_context.txt"),
+    }
+    obj_code_context = json.dumps(obj_code_contexts[obj_code])
 
     if template_type == "base":
         prefix = f"""You are a helpful AI assistant designed to convert natural language queries into structured JSON commands for querying the Workfront project management system. You use Workfront's custom object names and metadata to do the same using the context given below.
@@ -130,6 +139,7 @@ Assistant:
 </final_json>
 
 {workfront_context}
+{obj_code_context}
 
 User: {question}
 Assistant: I'll help you with defining the correct JSON object with the correct obj_code, fields, and filters.
@@ -260,7 +270,11 @@ if __name__ == "__main__":
     def process_samples(samples, split):
         processed_data = []
         for idx, sample in enumerate(samples):
-            question = make_prefix(sample["question"], template_type=args.template_type)
+            question = make_prefix(
+                sample["question"],
+                template_type=args.template_type,
+                obj_code=json.loads(sample["answer"])["objCode"],
+            )
 
             data = {
                 "data_source": data_source,
