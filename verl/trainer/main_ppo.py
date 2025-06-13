@@ -17,7 +17,14 @@ Note that we don't combine the main with ray_trainer as ray_trainer is used by o
 
 from verl import DataProto
 import torch
-from verl.utils.reward_score import gsm8k, math, multiply, countdown, wf_api, wf_api_jenish_test
+from verl.utils.reward_score import (
+    gsm8k,
+    math,
+    multiply,
+    countdown,
+    wf_api,
+    wf_api_jenish_test,
+)
 from verl.trainer.ppo.ray_trainer import RayPPOTrainer
 
 
@@ -83,8 +90,6 @@ class RewardManager:
             data_source = data_item.non_tensor_batch["data_source"]
             compute_score_fn = _select_rm_score_fn(data_source)
 
-
-            print("Sequences string from JK ", sequences_str)
             score = compute_score_fn(
                 solution_str=sequences_str, ground_truth=ground_truth
             )
