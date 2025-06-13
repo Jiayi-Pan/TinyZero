@@ -1,6 +1,8 @@
 import json
 import re
 import random
+import os
+import datetime
 
 
 def extract_answer(solution_str):
@@ -55,41 +57,56 @@ def compute_score(solution_str, ground_truth, method="strict", format_score=0.1,
     else:
         expected_response = ground_truth
     
+    # Setup logging to file
+    log_dir = os.path.expanduser("/home/workfrontadmin/TinyZeroRL/workfront_training_logs")
+    os.makedirs(log_dir, exist_ok=True)
+    log_file = os.path.join(log_dir, f"reward_logs_{datetime.datetime.now().strftime('%Y%m%d')}.txt")
+    
+    def log_both(message):
+        """Log to both console and file"""
+        print(message)
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        with open(log_file, "a", encoding="utf-8") as f:
+            if message.startswith("\n="):
+                f.write(f"\n[{timestamp}] {message}\n")
+            else:
+                f.write(f"[{timestamp}] {message}\n")
+    
     # Extract model's answer
     answer = extract_answer(solution_str)
     
-    print("\n" + "="*80)
-    print("🤖 MODEL EVALUATION")
-    print("="*80)
+    log_both("\n" + "="*80)
+    log_both("🤖 MODEL EVALUATION")
+    log_both("="*80)
     
     # Show the question (extract from solution_str)
     if "User:" in solution_str:
         question = solution_str.split("User:")[-1].split("Assistant:")[0].strip()
-        print(f"📝 QUESTION: {question}")
+        log_both(f"📝 QUESTION: {question}")
     
-    print(f"\n🎯 EXPECTED RESPONSE:")
-    print(json.dumps(expected_response, indent=2))
+    log_both(f"\n🎯 EXPECTED RESPONSE:")
+    log_both(json.dumps(expected_response, indent=2))
     
     if answer is None:
-        print(f"\n❌ MODEL RESPONSE: No <answer> tags found")
-        print(f"🔍 RAW OUTPUT: {solution_str[-200:]}")  # Last 200 chars
-        print(f"⭐ REWARD SCORE: 0.0")
-        print("="*80)
+        log_both(f"\n❌ MODEL RESPONSE: No <answer> tags found")
+        log_both(f"🔍 RAW OUTPUT: {solution_str[-200:]}")  # Last 200 chars
+        log_both(f"⭐ REWARD SCORE: 0.0")
+        log_both("="*80)
         return 0
 
-    print(f"\n🤖 MODEL RESPONSE (Raw):")
-    print(answer)
+    log_both(f"\n🤖 MODEL RESPONSE (Raw):")
+    log_both(answer)
     
     # Try to extract JSON
     api_request = extract_json(answer)
     if not api_request:
-        print(f"\n❌ EXTRACTED JSON: Invalid or missing JSON")
-        print(f"⭐ REWARD SCORE: {format_score}")
-        print("="*80)
+        log_both(f"\n❌ EXTRACTED JSON: Invalid or missing JSON")
+        log_both(f"⭐ REWARD SCORE: {format_score}")
+        log_both("="*80)
         return format_score
 
-    print(f"\n✅ EXTRACTED JSON:")
-    print(json.dumps(api_request, indent=2))
+    log_both(f"\n✅ EXTRACTED JSON:")
+    log_both(json.dumps(api_request, indent=2))
     
     # Scoring logic
     score_breakdown = []
@@ -144,11 +161,11 @@ def compute_score(solution_str, ground_truth, method="strict", format_score=0.1,
                     missing = core_expected - core_model
                     score_breakdown.append(f"❌ Missing important fields: {missing}")
     
-    print(f"\n📊 SCORING BREAKDOWN:")
+    log_both(f"\n📊 SCORING BREAKDOWN:")
     for item in score_breakdown:
-        print(f"   {item}")
+        log_both(f"   {item}")
     
-    print(f"\n⭐ FINAL REWARD SCORE: {final_score}")
-    print("="*80)
+    log_both(f"\n⭐ FINAL REWARD SCORE: {final_score}")
+    log_both("="*80)
     
     return final_score 
