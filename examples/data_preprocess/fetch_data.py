@@ -64,8 +64,11 @@ Answer:
   "objCode": "TASK",
   "fields": ["ID", "name", "priority", "plannedCompletionDate"],
   "filters": {{
-    "priority": "High",
-    "plannedCompletionDate": "$$TODAYbw+7d"
+        "priority": 3,
+        "actualCompletionDate_Mod": "isnull",
+        "plannedCompletionDate": "$$TODAYb+1w",
+        "plannedCompletionDate_Mod": "between",
+        "plannedCompletionDate_Range": "$$TODAYe+1w"
   }}
 }}
 ```
@@ -129,8 +132,11 @@ Your role is to interpret a user’s natural language request, determine the cor
     "objCode": "TASK",
     "fields": ["ID", "name", "priority", "plannedCompletionDate"],
     "filters": {{{{
-      "priority": "High",
-      "plannedCompletionDate": "$$TODAYbw+7d"
+        "priority": 3,
+        "actualCompletionDate_Mod": "isnull",
+        "plannedCompletionDate": "$$TODAYb+1w",
+        "plannedCompletionDate_Mod": "between",
+        "plannedCompletionDate_Range": "$$TODAYe+1w"
     }}}}
   }}}}
 }}}}
