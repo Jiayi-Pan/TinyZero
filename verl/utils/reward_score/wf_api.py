@@ -125,9 +125,24 @@ def compute_score(
     log_both("=" * 80)
 
     # Show the question (extract from solution_str)
-    if "User:" in solution_str:
-        question = solution_str.split("User:")[-1].split("Assistant:")[0].strip()
+    question = None
+    if "<|im_start|>user" in solution_str:
+        # Qwen instruct format
+        try:
+            question = solution_str.split("<|im_start|>user")[1].split("<|im_end|>")[0].strip()
+        except IndexError:
+            question = "Could not extract question from Qwen format"
+    elif "User:" in solution_str:
+        # Standard format
+        try:
+            question = solution_str.split("User:")[-1].split("Assistant:")[0].strip()
+        except IndexError:
+            question = "Could not extract question from standard format"
+    
+    if question:
         log_both(f"📝 QUESTION: {question}")
+    else:
+        log_both("📝 QUESTION: Could not extract question from solution_str")
 
     log_both("\n🎯 EXPECTED RESPONSE:")
     log_both(json.dumps(expected_response, indent=2))
@@ -274,10 +289,8 @@ def compute_score(
     if missing_fields:
         final_score = min(final_score, format_score)
     final_score = max(0, min(final_score, 1.0))
-    
-    # Round to 2 decimal places
-    final_score = round(final_score, 2)
 
+    final_score = round(final_score, 2)
     log_both(f"\n📊 SCORING BREAKDOWN:")
     for item in score_breakdown:
         log_both(f"   {item}")
