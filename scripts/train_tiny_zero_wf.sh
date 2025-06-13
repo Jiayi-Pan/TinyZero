@@ -28,4 +28,4 @@ trainer.save_freq=10 \
 trainer.test_freq=10 \
 trainer.project_name=TinyZero \
 trainer.experiment_name=$EXPERIMENT_NAME \
-trainer.total_epochs=10 2>&1 | tee verl_demo.log
+trainer.total_epochs=15 2>&1 | tee verl_demo.log
