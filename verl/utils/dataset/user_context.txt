@@ -5,70 +5,53 @@ domain_knowledge: |
   Use the OR operator because the name may not appear in all three fields.  
   Searching by email or username may also be used.
 
-  USER_FIELDS = [
-    "accessLevelID",
-    "address",
-    "address2",
-    "apiKeyCreateDate",
-    "billingPerHour",
-    "categoryID",
-    "city",
-    "companyID",
-    "costPerHour",
-    "country",
-    "customerID",
-    "customFormsDescriptions",
-    "customFormsGroupIDs",
-    "customFormsIDs",
-    "customFormsNames",
-    "defaultHourTypeID",
-    "eauthUserID",
-    "emailAddr",
-    "enteredByID",
-    "entryDate",
-    "extRefID",
-    "firstName",
-    "hasAPIAccess",
-    "hasDocuments",
-    "hasNotes",
-    "hasPassword",
-    "homeGroupID",
-    "homeTeamID",
-    "ID",
-    "isActive",
-    "isAdmin",
-    "lastEnteredNoteID",
-    "lastLoginDate",
-    "lastName",
-    "lastNoteID",
-    "lastProofApprovalSync",
-    "lastUpdateDate",
-    "lastUpdatedByID",
-    "latestUpdateNoteID",
-    "loginBlocked",
-    "loginCount",
-    "managerID",
-    "mobilePhoneNumber",
-    "myInfo",
-    "name",
-    "parentGroupIDs",
-    "password",
-    "passwordDate",
-    "persona",
-    "phoneExtension",
-    "phoneNumber",
-    "portalProfileID",
-    "postalCode",
-    "resourcePoolID",
-    "roleID",
-    "scheduledDeactivationDate",
-    "scheduleID",
-    "state",
-    "statusUpdate",
-    "teams",
-    "teamsListString",
-    "timesheetProfileID",
-    "timeZone",
-    "title",
-    "username",
-]
+OBJECT: USER   (objCode = USER)
+
+Fields:
+- ID (string)
+- name (string)                          ← convenience concat of first & last
+- firstName (string)
+- lastName (string)
+- username (string)                      ← login name
+- emailAddr (string)
+- isActive (boolean)                     ← true = active, false = deactivated
+- licenseType (string)                   ← F=Plan, T=Work, C=Review, L=Timesheet-only, R=Request, X=External
+- roleID (string)                        ← primary job role
+- homeGroupID (string)
+- homeTeamID (string)
+- managerID (string)
+- costPerHour (double)                   ← internal cost rate
+- billingPerHour (double)                ← external billing rate
+- entryDate (dateTime)                   ← date user created
+- lastLoginDate (dateTime)
+- lastUpdateDate (dateTime)
+- hasReservedTimes (boolean)             ← any PTO / time-off records
+
+Nested & Reference Fields:
+- role:name (string)                     ← from ROLE
+- homeGroup:name (string)                ← from GROUP
+- homeTeam:name (string)                 ← from TEAM
+- manager:name (string)                  ← from USER
+- teams:name (string)                    ← names of all teams (collection)
+- userAssignments:task:name (string)     ← task names where user is assigned
+- userAssignments:project:name (string)  ← parent project names
+- userAssignments:assignmentPercent (double)
+- userAssignments:status (string)
+
+Relationships:
+- role            → ROLE
+- homeGroup       → GROUP
+- homeTeam        → TEAMOB
+- manager         → USER   (self-reference)
+- teams           → [TEAMOB]
+- userAssignments → [ASSGN] (reverse collection of assignments)
+
+Common Filter Operators:
+- _Mod: **"isnull"**              → check for blanks (e.g. managerID_Mod=isnull)
+- _Mod: **"between"** + _Range    → date ranges (lastLoginDate_Mod=between, lastLoginDate=$$TODAY-30d, lastLoginDate_Range=$$TODAY)
+- _Mod: **"cicontains"**          → case-insensitive contains for text (emailAddr_Mod=cicontains, emailAddr=@company.com)
+- _Mod: **"eq", "lt", "gt", etc.**→ numeric / date comparisons
+- **isActive=true/false**         → quickly filter active vs. inactive users
+- **licenseType=F**               → filter by license (Plan, Work, etc.)
+
+Use this cheat-sheet exactly like the TASK & PROJECT metadata when selecting fields and building filters in your API `search` / `report` calls.

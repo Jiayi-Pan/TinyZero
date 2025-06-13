@@ -5,96 +5,41 @@ domain_knowledge:|
   for when things actually completed use the actualCompletionDate, if you are wanting to know when something is planned to be completed use the plannedCompletionDate.
   Default Statuses include: Current, Dead, On Hold, Planning, Complete, Requested, Approved, Rejected, and Idea
 
-  PROJ_FIELDS = [
-    "actualCompletionDate",
-    "actualCost",
-    "actualDurationExpression",
-    "actualDurationMinutes",
-    "actualHoursLastMonth",
-    "actualHoursLastThreeMonths",
-    "actualHoursThisMonth",
-    "actualHoursTwoMonthsAgo",
-    "actualStartDate",
-    "actualValue",
-    "actualWorkRequired",
-    "actualWorkRequiredDouble",
-    "actualWorkRequiredExpression",
-    "approvalCompletionDate",
-    "approvalEstStartDate",
-    "approvalProcessID",
-    "approvalProjectedStartDate",
-    "approvalStartDate",
-    "approversString",
-    "budgetedStartDate",
-    "budgetStatus",
-    "categoryID",
-    "companyID",
-    "companyRatesOverride",
-    "completedHours",
-    "completedStoryPoints",
-    "completionType",
-    "condition",
-    "conditionType",
-    "currency",
-    "customerID",,
-    "description",
-    "durationExpression",
-    "durationMinutes",
-    "enteredByID",
-    "entryDate",
-    "fixedStartDate",
-    "groupID",
-    "hasCompletionConstraint",
-    "hasDocuments",
-    "ID",
-    "isOriginalPlannedHoursSet",
-    "isProjectDead",
-    "isStatusComplete",
-    "lastCalcDate",
-    "lastConditionNoteID",
-    "lastNoteID",
-    "lastUpdateDate",
-    "lastUpdatedByID",
-    "name",
-    "numberOfOpenRisks",
-    "numberOpenOpTasks",
-    "originalWorkRequired",
-    "ownerID",
-    "pendingCalculation",
-    "percentComplete",
-    "personal",
-    "plannedCompletionDate",
-    "plannedDateAlignment",
-    "plannedHoursAlignment",
-    "plannedStartDate",
-    "plannedValue",
-    "portfolioID",
-    "portfolioPriority",
-    "priority",
-    "programID",
-    "progressStatus",
-    "projectBudgetedCost",
-    "projectedCompletionDate",
-    "projectedStartDate",,
-    "referenceNumber",
-    "risk",
-    "scheduleID",
-    "showCondition",
-    "showStatus",
-    "sponsorID",
-    "status",
-    "statusLabel",
-    "statusUpdate",
-    "storiesWithoutPoints",
-    "storyPointsPercentComplete",
-    "submittedByID",
-    "teamID",
-    "templateID",
-    "totalHours",
-    "totalOpTaskCount",
-    "totalStoryPoints",
-    "totalTaskCount",
-    "updateType",
-    "URL",
-    "version",
-]
+  OBJECT: PROJECT   (objCode = PROJ)
+
+Fields:
+- ID (string)
+- name (string)
+- status (string; CUR = Current, PLN = Planning, CPL = Complete, ONH = On Hold, DED = Dead, REQ = Requested, APR = Approved, REJ = Rejected, IDA = Idea)
+- priority (int; 0=None, 1=Low, 2=Normal, 3=High, 4=Urgent)
+- plannedStartDate (dateTime)
+- plannedCompletionDate (dateTime)
+- actualStartDate (dateTime)
+- actualCompletionDate (dateTime)
+- lastUpdateDate (dateTime)
+- percentComplete (double)
+- ownerID (string)
+- teamID (string)
+- entryDate (dateTime)
+
+Reference / Composite Fields:
+- owner:name (string)          ← from USER
+- team:name  (string)          ← from TEAM
+- portfolio:name / program:name (string)  ← optional filters
+- tasks (reverse collection)   ← TASK objects with projectID = this project
+
+Relationships:
+- owner      → USER
+- team       → TEAM
+- tasks      → TASK (via projectID)
+
+Common Filter Operators:
+- _Mod: "isnull"              → check for empty fields (e.g. teamID_Mod=isnull)
+- _Mod: "between" + _Range    → date ranges (plannedCompletionDate_Mod=between, plannedCompletionDate=$$TODAY, plannedCompletionDate_Range=$$TODAY+10d)
+- _Mod: "eq" | "lt" | "lte" | "gt" | "gte" → numeric / date comparisons
+- _Mod: "cicontains"          → case-insensitive substring match for text fields (e.g. name_Mod=cicontains, name=Redesign)
+
+
+Use this metadata to select fields and create accurate filters in your JSON responses.
+
+

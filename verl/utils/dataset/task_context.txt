@@ -13,81 +13,39 @@ domain_knowledge: |
   Tasks include a taskNumber.  The task number shows the order the task appears in a list as shown to the user.  The user may referer to a task by its task number instead of its name.
   If a user refers to a task by its number insetead of its name, then it will need to be search by taskNumber instead of name to find the task id.  i.e. I want to rename task 3 to "New Task Name"
 
-  TASK_FIELDS = [
-    "accessorIDs",
-    "actualCompletionDate",
-    "actualDuration",
-    "actualDurationMinutes",
-    "actualStartDate",
-    "actualWork",
-    "actualWorkRequired",
-    "approvalCompletionDate",
-    "approvalEstStartDate",
-    "approvalProcessID",
-    "approvalProjectedStartDate",
-    "approvalStartDate",
-    "assignments",
-    "assignedTo",
-    "assignedToID",
-    "assignmentsListString",
-    "categoryID",
-    "color",
-    "commitDate",
-    "commitDateRange",
-    "completionPendingDate",
-    "condition",
-    "constraintDate",
-    "costAmount",
-    "costType",
-    "currentApprovalStepID",
-    "customerID",
-    "description",
-    "duration",
-    "durationExpression",
-    "durationMinutes",
-    "durationType",
-    "enteredByID",
-    "entryDate",
-    "estCompletionDate",
-    "estimate",
-    "estStartDate",
-    "groupID",
-    "hasCompletionConstraint",
-    "hasDocuments",
-    "hoursPerPoint",
-    "ID",
-    "isCritical",
-    "isReady",
-    "isStatusComplete",
-    "isWorkRequiredLocked",
-    "iterationID",
-    "lastUpdateDate",
-    "lastUpdatedByID",
-    "milestoneID",
-    "name",
-    "numberOfChildren",
-    "numberOpenOpTasks",
-    "originalActualWorkRequired",
-    "originalActualWorkRequiredDouble",
-    "originalDuration",
-    "originalWorkRequired",
-    "parentID",
-    "pendingCalculation",
-    "pendingUpdateMethods",
-    "percentComplete",
-    "personal",
-    "plannedCompletionDate",
-    "plannedCompletionDateExpression",
-    "plannedCost",
-    "plannedDateAlignment",
-    "plannedDuration",
-    "plannedDurationMinutes",
-    "plannedHoursAlignment",
-    "plannedStartDate",
-    "plannedStartDateExpression",
-    "previousStatus",
-    "priority",
-    "progressStatus",
-    "projectID",
-    "referenceNumber",
-]
+Use the following metadata for the TASK object when generating JSON queries:
+
+OBJECT: TASK
+
+Fields:
+- ID (string)
+- name (string)
+- status (string)
+- priority (int; 0=None, 1=Low, 2=Normal, 3=High, 4=Urgent)
+- plannedCompletionDate (dateTime)
+- actualCompletionDate (dateTime)
+- lastUpdateDate (dateTime)
+- percentComplete (double)
+- assignedToID (string)
+- project:name (string) ← from project reference
+- project:status (string) ← from project reference
+
+Nested & Reference Fields:
+- assignedTo:name (string) ← from assignedTo reference (USER)
+- assignments:role:name (string) ← role assigned to user(s)
+- assignments:assignedTo:name (string) ← user(s) assigned
+- assignments:assignmentPercent (double) ← percent allocation
+- assignments:status (string) ← assignment-level status
+
+Relationships:
+- assignedTo → USER
+- project → PROJ
+- assignments → [assignment object] containing role, assignedTo, and status
+
+Common Filter Operators:
+- _Mod: "isnull" → to check for unassigned fields
+- _Mod: "between" + _Range → for date range filters
+- _Mod: "cicontains" → for partial text matches
+- _Mod: "eq", "lt", "gt", etc. → for value comparisons
+
+Use this metadata to select fields and create accurate filters in your JSON responses.
