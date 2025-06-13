@@ -495,5 +495,173 @@
         "actualCompletionDate_Mod": "isnull"
       }
     }
+  },
+  {
+    "prompt": "List all tasks assigned by user ID 8765.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "TASK",
+      "fields": ["ID", "name"],
+      "filters": {
+        "assignments:assignedByID": "8765"
+      }
+    }
+  },
+  {
+    "prompt": "Get all tasks in project ID PROJ4321 that are still in progress.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "TASK",
+      "fields": ["ID", "name"],
+      "filters": {
+        "projectID": "PROJ4321",
+        "status": "INP"
+      }
+    }
+  },
+  {
+    "prompt": "Get all projects that started in the last 15 days and are not completed.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "PROJ",
+      "fields": ["ID", "name", "status", "actualStartDate"],
+      "filters": {
+        "actualStartDate": "$$TODAY",
+        "actualStartDate_Mod": "between",
+        "actualStartDate_Range": "$$TODAY-15d",
+        "status_Mod": "ne",
+        "status": "CPL"
+      }
+    }
+  },
+  {
+    "prompt": "List all overdue tasks assigned to user ID 2201.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "TASK",
+      "fields": ["ID", "name", "plannedCompletionDate", "assignments:assignedToID"],
+      "filters": {
+        "assignments:assignedToID": "2201",
+        "actualCompletionDate_Mod": "isnull",
+        "plannedStartDate": "$$TODAY",
+        "plannedStartDate_Mod": "lt"
+      }
+    }
+  },
+  {
+    "prompt": "Fetch tasks that were due yesterday and assigned to user ID 9988.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "TASK",
+      "fields": ["ID", "name", "plannedCompletionDate", "assignments:assignedToID"],
+      "filters": {
+        "plannedCompletionDate": "$$TODAYb-1d",
+        "plannedCompletionDate_Mod": "between",
+        "plannedCompletionDate_Range": "$$TODAYe-1d",
+        "assignments:assignedToID": "9988"
+      }
+    }
+  },
+  {
+    "prompt": "List all tasks with status 'Planning' or 'In Progress'.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "TASK",
+      "fields": ["ID", "name", "status"],
+      "filters": {
+        "status_Mod": "in",
+        "status": ["PLN", "INP"]
+      }
+    }
+  },
+  {
+    "prompt": "Show all projects owned by user ID 901.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "PROJ",
+      "fields": ["ID", "name", "ownerID"],
+      "filters": {
+        "ownerID": "901"
+      }
+    }
+  },
+  {
+    "prompt": "List tasks started this week and not assigned yet.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "TASK",
+      "fields": ["ID", "name", "plannedStartDate", "assignedToID"],
+      "filters": {
+        "plannedStartDate": "$$TODAYb-1w",
+        "plannedStartDate_Mod": "between",
+        "plannedStartDate_Range": "$$TODAYe-1w",
+        "assignedToID_Mod": "isnull"
+      }
+    }
+  },
+  {
+    "prompt": "Give me tasks created by user ID 4001 and assigned to someone else.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "TASK",
+      "fields": ["ID", "name", "enteredByID", "assignments:assignedToID"],
+      "filters": {
+        "enteredByID": "4001",
+        "assignments:assignedToID_Mod": "ne",
+        "assignments:assignedToID": "4001"
+      }
+    }
+  },
+  {
+    "prompt": "Find all current tasks under projects created this month.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "TASK",
+      "fields": ["ID", "name", "project:entryDate"],
+      "filters": {
+        "status": "CUR",
+        "project:entryDate": "$$TODAYbm",
+        "project:entryDate_Mod": "between",
+        "project:entryDate_Range": "$$TODAYem"
+      }
+    }
+  },
+  {
+    "prompt": "List all tasks that have no assigned user and are not completed.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "TASK",
+      "fields": ["ID", "name", "assignments:assignedToID", "status"],
+      "filters": {
+        "assignments:assignedToID_Mod": "isnull",
+        "actualCompletionDate_Mod": "isnull"
+      }
+    }
+  },
+  {
+    "prompt": "Get tasks that are  high priority and created this week.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "TASK",
+      "fields": ["ID", "name", "priority", "entryDate"],
+      "filters": {
+        "priority": 3,
+        "entryDate": "$$TODAYbw",
+        "entryDate_Mod": "between",
+        "entryDate_Range": "$$TODAYew"
+      }
+    }
+  },
+  {
+    "prompt": "Find tasks created and assigned by user ID 1122.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "TASK",
+      "fields": ["ID", "name", "assignments:assignedByID"],
+      "filters": {
+        "enteredByID": "1122",
+        "assignments:assignedByID": "1122"
+      }
+    }
   }
 ]

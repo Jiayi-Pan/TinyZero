@@ -274,6 +274,9 @@ def compute_score(
     if missing_fields:
         final_score = min(final_score, format_score)
     final_score = max(0, min(final_score, 1.0))
+    
+    # Round to 2 decimal places
+    final_score = round(final_score, 2)
 
     log_both(f"\n📊 SCORING BREAKDOWN:")
     for item in score_breakdown:
