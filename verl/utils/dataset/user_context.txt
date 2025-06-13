@@ -54,4 +54,4 @@ Common Filter Operators:
 - **isActive=true/false**         → quickly filter active vs. inactive users
 - **licenseType=F**               → filter by license (Plan, Work, etc.)
 
-Use this cheat-sheet exactly like the TASK & PROJECT metadata when selecting fields and building filters in your API `search` / `report` calls.
+Use this metadata to select fields and create accurate filters in your JSON responses.
