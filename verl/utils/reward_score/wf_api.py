@@ -6,7 +6,6 @@ import datetime
 
 
 def extract_answer(solution_str):
-    print("solution_str", solution_str)
     """Extract the API request from the solution string."""
     # Remove everything before the first "Assistant:"
     if "Assistant:" in solution_str:
