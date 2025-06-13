@@ -134,60 +134,127 @@ def compute_score(
     # log_both(f"\n✅ EXTRACTED JSON:")
     # log_both(json.dumps(api_request, indent=2))
 
-    # Scoring logic
+    # Detailed point breakdown system
     score_breakdown = []
     final_score = 0.0
 
-    # Check required fields presence
-    required_fields = ["objCode", "fields", "filters"]  # Fixed field name
+    # Point allocation:
+    # - Missing all 3 fields: -0.1 penalty
+    # - objCode: 0.2 total (0.2 if correct, 0.05 if field exists but wrong)
+    # - fields: 0.3 total (with partial credit)
+    # - filters: 0.4 total (0.2 for correct filters + 0.2 for correct values, with partial credit)
+
+    # Check for exact required field names
+    required_fields = ["objCode", "fields", "filters"]
     missing_fields = []
     for field in required_fields:
         if field not in api_request:
             missing_fields.append(field)
 
+    # Apply penalty if any exact field names are missing
     if missing_fields:
-        final_score = format_score
-        score_breakdown.append(f"❌ Missing fields: {missing_fields}")
+        final_score = format_score  # 0.1 penalty for missing exact field names
+        score_breakdown.append(f" Missing exact required field names: {missing_fields} (-{1.0 - format_score:.1f} points, getting format_score {format_score})")
+        # Continue checking what's present for feedback, but score is capped at format_score
     else:
-        score_breakdown.append("✅ All required fields present")
+        score_breakdown.append(" All exact required field names present")
 
-        # Check objCode
-        if api_request["objCode"] != expected_response["objCode"]:
-            final_score = 0.4
-            score_breakdown.append(
-                f"❌ Wrong objCode: got '{api_request['objCode']}', expected '{expected_response['objCode']}'"
-            )
+    # 1. objCode scoring (0.2 total points)
+    if "objCode" in api_request:
+        if api_request["objCode"] == expected_response["objCode"]:
+            final_score += 0.2
+            score_breakdown.append(f"objCode: Correct '{api_request['objCode']}' (+0.2 points)")
         else:
-            score_breakdown.append("✅ Correct objCode")
+            final_score += 0.05  # Partial credit for field existing
+            score_breakdown.append(
+                f"objCode: Wrong - got '{api_request['objCode']}', expected '{expected_response['objCode']}' (+0.05 points for field existing)"
+            )
 
-            # Check filters (simplified comparison)
-            model_filters = api_request.get("filters", {})
-            expected_filters = expected_response.get("filters", {})
+    # 2. fields scoring (0.3 total points)
+    if "fields" in api_request:
+        model_fields = set(api_request.get("fields", []))
+        expected_fields = set(expected_response.get("fields", []))
 
-            if not model_filters and expected_filters:
-                final_score = 0.5
-                score_breakdown.append("❌ Missing filters")
-            elif model_filters != expected_filters:
-                final_score = 0.6
-                score_breakdown.append("❌ Incorrect filters")
+        if not model_fields and expected_fields:
+            score_breakdown.append(" fields: Empty but expected content (0.0 points)")
+        elif not expected_fields:
+            final_score += 0.3  # Full credit if no specific fields expected
+            score_breakdown.append(" fields: No specific requirements (+0.3 points)")
+        else:
+            # Allow some flexibility for ID and name fields
+            core_expected = expected_fields - {"ID", "name"}
+            core_model = model_fields - {"ID", "name"}
+            
+            if not core_expected:
+                # No core fields expected, check if any expected fields present
+                matching_fields = len(expected_fields.intersection(model_fields))
+                total_expected = len(expected_fields)
+                field_score = (matching_fields / total_expected) * 0.3
+                final_score += field_score
+                score_breakdown.append(f" fields: {matching_fields}/{total_expected} expected fields present (+{field_score:.2f} points)")
             else:
-                score_breakdown.append("✅ Correct filters")
-
-                # Check fields
-                model_fields = set(api_request.get("fields", []))
-                expected_fields = set(expected_response.get("fields", []))
-
-                # Allow some flexibility for ID and name fields
-                core_expected = expected_fields - {"ID", "name"}
-                core_model = model_fields - {"ID", "name"}
-
-                if core_expected.issubset(core_model):
-                    final_score = 1.0
-                    score_breakdown.append("✅ All important fields present")
+                # Check core fields
+                matching_core = len(core_expected.intersection(core_model))
+                total_core = len(core_expected)
+                
+                if matching_core == total_core:
+                    final_score += 0.3
+                    score_breakdown.append(" fields: All important fields present (+0.3 points)")
                 else:
-                    final_score = 0.7
+                    # Partial credit for fields
+                    field_score = (matching_core / total_core) * 0.3
+                    final_score += field_score
                     missing = core_expected - core_model
-                    score_breakdown.append(f"❌ Missing important fields: {missing}")
+                    score_breakdown.append(f"⚠️ fields: Partial match {matching_core}/{total_core}, missing {missing} (+{field_score:.2f} points)")
+
+    # 3. filters scoring (0.4 total points: 0.2 for correct filters + 0.2 for correct values)
+    if "filters" in api_request:
+        model_filters = api_request.get("filters", {})
+        expected_filters = expected_response.get("filters", {})
+
+        if not model_filters and expected_filters:
+            score_breakdown.append(" filters: Empty but expected content (0.0 points)")
+        elif not expected_filters:
+            final_score += 0.4  # Full credit if no filters expected
+            score_breakdown.append("✅ filters: No specific requirements (+0.4 points)")
+        elif isinstance(model_filters, dict) and isinstance(expected_filters, dict):
+            # Check filter keys (0.2 points)
+            expected_keys = set(expected_filters.keys())
+            model_keys = set(model_filters.keys())
+            
+            matching_keys = len(expected_keys.intersection(model_keys))
+            total_keys = len(expected_keys)
+            
+            if matching_keys == total_keys:
+                key_score = 0.2
+                score_breakdown.append("filters: All filter keys present (+0.2 points)")
+            else:
+                key_score = (matching_keys / total_keys) * 0.2 if total_keys > 0 else 0
+                missing_keys = expected_keys - model_keys
+                score_breakdown.append(f" filters: Partial keys {matching_keys}/{total_keys}, missing {missing_keys} (+{key_score:.2f} points)")
+            
+            final_score += key_score
+            
+            # Check filter values (0.2 points)
+            matching_values = sum(1 for k, v in expected_filters.items() 
+                                if k in model_filters and model_filters[k] == v)
+            
+            if matching_values == total_keys:
+                value_score = 0.2
+                score_breakdown.append("filters: All filter values correct (+0.2 points)")
+            else:
+                value_score = (matching_values / total_keys) * 0.2 if total_keys > 0 else 0
+                score_breakdown.append(f" filters: Partial values {matching_values}/{total_keys} correct (+{value_score:.2f} points)")
+            
+            final_score += value_score
+        else:
+            score_breakdown.append(" filters: Format mismatch (0.0 points)")
+
+    # Ensure score doesn't exceed 1.0 or go below 0
+    # If missing field names, cap at format_score
+    if missing_fields:
+        final_score = min(final_score, format_score)
+    final_score = max(0, min(final_score, 1.0))
 
     log_both(f"\n📊 SCORING BREAKDOWN:")
     for item in score_breakdown:
