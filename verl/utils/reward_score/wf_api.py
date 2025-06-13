@@ -38,11 +38,11 @@ def extract_text_after_thinking(solution_str):
 def strip_json_comments(json_str):
     """Remove // and /* */ style comments from JSON string."""
     # Remove single-line comments (// comment)
-    json_str = re.sub(r'//.*?(?=\n|$)', '', json_str)
-    
+    json_str = re.sub(r"//.*?(?=\n|$)", "", json_str)
+
     # Remove multi-line comments (/* comment */)
-    json_str = re.sub(r'/\*.*?\*/', '', json_str, flags=re.DOTALL)
-    
+    json_str = re.sub(r"/\*.*?\*/", "", json_str, flags=re.DOTALL)
+
     return json_str
 
 
@@ -53,7 +53,7 @@ def extract_json(answer):
     match = re.search(json_pattern, answer, re.DOTALL)
     if match:
         json_str = match.group(1).strip()
-        
+
         # Try parsing as-is first
         try:
             return json.loads(json_str)
@@ -129,7 +129,9 @@ def compute_score(
     if "<|im_start|>user" in solution_str:
         # Qwen instruct format
         try:
-            question = solution_str.split("<|im_start|>user")[1].split("<|im_end|>")[0].strip()
+            question = (
+                solution_str.split("<|im_start|>user")[1].split("<|im_end|>")[0].strip()
+            )
         except IndexError:
             question = "Could not extract question from Qwen format"
     elif "User:" in solution_str:
@@ -138,7 +140,7 @@ def compute_score(
             question = solution_str.split("User:")[-1].split("Assistant:")[0].strip()
         except IndexError:
             question = "Could not extract question from standard format"
-    
+
     if question:
         log_both(f"📝 QUESTION: {question}")
     else:
@@ -188,7 +190,9 @@ def compute_score(
     # Apply penalty if any exact field names are missing
     if missing_fields:
         final_score = format_score  # 0.1 penalty for missing exact field names
-        score_breakdown.append(f" Missing exact required field names: {missing_fields} (-{1.0 - format_score:.1f} points, getting format_score {format_score})")
+        score_breakdown.append(
+            f" Missing exact required field names: {missing_fields} (-{1.0 - format_score:.1f} points, getting format_score {format_score})"
+        )
         # Continue checking what's present for feedback, but score is capped at format_score
     else:
         score_breakdown.append(" All exact required field names present")
@@ -197,7 +201,9 @@ def compute_score(
     if "objCode" in api_request:
         if api_request["objCode"] == expected_response["objCode"]:
             final_score += 0.2
-            score_breakdown.append(f"objCode: Correct '{api_request['objCode']}' (+0.2 points)")
+            score_breakdown.append(
+                f"objCode: Correct '{api_request['objCode']}' (+0.2 points)"
+            )
         else:
             final_score += 0.05  # Partial credit for field existing
             score_breakdown.append(
@@ -206,7 +212,9 @@ def compute_score(
 
     # 2. fields scoring (0.3 total points)
     if "fields" in api_request:
-        model_fields = set(api_request.get("fields", []))
+        model_fields = api_request.get("fields", [])
+        if model_fields:
+            model_fields = set(model_fields)
         expected_fields = set(expected_response.get("fields", []))
 
         if not model_fields and expected_fields:
@@ -218,28 +226,34 @@ def compute_score(
             # Allow some flexibility for ID and name fields
             core_expected = expected_fields - {"ID", "name"}
             core_model = model_fields - {"ID", "name"}
-            
+
             if not core_expected:
                 # No core fields expected, check if any expected fields present
                 matching_fields = len(expected_fields.intersection(model_fields))
                 total_expected = len(expected_fields)
                 field_score = (matching_fields / total_expected) * 0.3
                 final_score += field_score
-                score_breakdown.append(f" fields: {matching_fields}/{total_expected} expected fields present (+{field_score:.2f} points)")
+                score_breakdown.append(
+                    f" fields: {matching_fields}/{total_expected} expected fields present (+{field_score:.2f} points)"
+                )
             else:
                 # Check core fields
                 matching_core = len(core_expected.intersection(core_model))
                 total_core = len(core_expected)
-                
+
                 if matching_core == total_core:
                     final_score += 0.3
-                    score_breakdown.append(" fields: All important fields present (+0.3 points)")
+                    score_breakdown.append(
+                        " fields: All important fields present (+0.3 points)"
+                    )
                 else:
                     # Partial credit for fields
                     field_score = (matching_core / total_core) * 0.3
                     final_score += field_score
                     missing = core_expected - core_model
-                    score_breakdown.append(f"⚠️ fields: Partial match {matching_core}/{total_core}, missing {missing} (+{field_score:.2f} points)")
+                    score_breakdown.append(
+                        f"⚠️ fields: Partial match {matching_core}/{total_core}, missing {missing} (+{field_score:.2f} points)"
+                    )
 
     # 3. filters scoring (0.4 total points: 0.2 for correct filters + 0.2 for correct values)
     if "filters" in api_request:
@@ -255,31 +269,42 @@ def compute_score(
             # Check filter keys (0.2 points)
             expected_keys = set(expected_filters.keys())
             model_keys = set(model_filters.keys())
-            
+
             matching_keys = len(expected_keys.intersection(model_keys))
             total_keys = len(expected_keys)
-            
+
             if matching_keys == total_keys:
                 key_score = 0.2
                 score_breakdown.append("filters: All filter keys present (+0.2 points)")
             else:
                 key_score = (matching_keys / total_keys) * 0.2 if total_keys > 0 else 0
                 missing_keys = expected_keys - model_keys
-                score_breakdown.append(f" filters: Partial keys {matching_keys}/{total_keys}, missing {missing_keys} (+{key_score:.2f} points)")
-            
+                score_breakdown.append(
+                    f" filters: Partial keys {matching_keys}/{total_keys}, missing {missing_keys} (+{key_score:.2f} points)"
+                )
+
             final_score += key_score
-            
+
             # Check filter values (0.2 points)
-            matching_values = sum(1 for k, v in expected_filters.items() 
-                                if k in model_filters and model_filters[k] == v)
-            
+            matching_values = sum(
+                1
+                for k, v in expected_filters.items()
+                if k in model_filters and model_filters[k] == v
+            )
+
             if matching_values == total_keys:
                 value_score = 0.2
-                score_breakdown.append("filters: All filter values correct (+0.2 points)")
+                score_breakdown.append(
+                    "filters: All filter values correct (+0.2 points)"
+                )
             else:
-                value_score = (matching_values / total_keys) * 0.2 if total_keys > 0 else 0
-                score_breakdown.append(f" filters: Partial values {matching_values}/{total_keys} correct (+{value_score:.2f} points)")
-            
+                value_score = (
+                    (matching_values / total_keys) * 0.2 if total_keys > 0 else 0
+                )
+                score_breakdown.append(
+                    f" filters: Partial values {matching_values}/{total_keys} correct (+{value_score:.2f} points)"
+                )
+
             final_score += value_score
         else:
             score_breakdown.append(" filters: Format mismatch (0.0 points)")
