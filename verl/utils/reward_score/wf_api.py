@@ -35,16 +35,35 @@ def extract_text_after_thinking(solution_str):
     return solution_str[position_to_slice:].strip()
 
 
+def strip_json_comments(json_str):
+    """Remove // and /* */ style comments from JSON string."""
+    # Remove single-line comments (// comment)
+    json_str = re.sub(r'//.*?(?=\n|$)', '', json_str)
+    
+    # Remove multi-line comments (/* comment */)
+    json_str = re.sub(r'/\*.*?\*/', '', json_str, flags=re.DOTALL)
+    
+    return json_str
+
+
 def extract_json(answer):
     """Extract ```json{}``` from the answer string."""
+    # Use DOTALL flag to make . match newlines as well
     json_pattern = r"```json\s*(.*?)\s*```"
     match = re.search(json_pattern, answer, re.DOTALL)
     if match:
         json_str = match.group(1).strip()
+        
+        # Try parsing as-is first
         try:
             return json.loads(json_str)
         except json.JSONDecodeError:
-            return None
+            # If that fails, try stripping comments
+            try:
+                cleaned_json = strip_json_comments(json_str)
+                return json.loads(cleaned_json)
+            except json.JSONDecodeError:
+                return None
     return None
 
 
