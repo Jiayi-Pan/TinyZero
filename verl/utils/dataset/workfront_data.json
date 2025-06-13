@@ -242,7 +242,6 @@
       "fields": ["ID", "name", "plannedCompletionDate"],
       "filters": {
         "plannedCompletionDate": "$$TODAYe+1w",
-        "plannedCompletionDate_Mod": "eq",
         "actualCompletionDate_Mod": "isnull"
       }
     }
@@ -255,7 +254,6 @@
       "fields": ["ID", "name", "plannedCompletionDate"],
       "filters": {
         "plannedCompletionDate": "$$TODAYew",
-        "plannedCompletionDate_Mod": "eq",
         "actualCompletionDate_Mod": "isnull"
       }
     }
@@ -307,7 +305,6 @@
       "fields": ["ID", "name", "plannedCompletionDate"],
       "filters": {
         "plannedCompletionDate": "$$TODAYe+1w",
-        "plannedCompletionDate_Mod": "eq",
         "actualCompletionDate_Mod": "isnull"
       }
     }
@@ -372,7 +369,6 @@
       "fields": ["ID", "name", "plannedCompletionDate"],
       "filters": {
         "plannedCompletionDate": "$$TODAYe+1w",
-        "plannedCompletionDate_Mod": "eq",
         "actualCompletionDate_Mod": "isnull"
       }
     }
@@ -478,7 +474,6 @@
       "fields": ["ID", "name", "plannedCompletionDate"],
       "filters": {
         "plannedCompletionDate": "$$TODAY",
-        "plannedCompletionDate_Mod": "eq",
         "actualCompletionDate_Mod": "isnull"
       }
     }

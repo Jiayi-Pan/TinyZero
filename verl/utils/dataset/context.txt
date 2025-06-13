@@ -5,15 +5,16 @@ TASK: Represents individual tasks.
 PROJ: Represents projects.
 USER: Represents users (people in the org).
 
-When filtering data, "filters" can be a list of key, value pairs. The key could be a field name with or without operator expression.
-When adding an operator expression, append "_Mod" to the filter key.
+You can specify filters to retrieve objects by specific criteria. The "filters" property should be a list of key-value pairs where the key is a field name and the value is the filter value, e.g. {"name":"My Project"}
+You can enhance a search for objects using modifiers. Modifiers allow you to search for values less than, greater than, between, not equal, etc.
+When adding a modifier, add a filter key with the field name and append "_Mod", e.g. {"name_Mod": "cicontains"}.
 
-Here are the possible filter operators:
+Here are the possible modifiers you can use:
 - lt: field < value
 - lte: field <= value
 - gt: field > value
 - gte: field >= value
-- eq: field = value (default when 1 value exists)
+- eq: field = value
 - cieq: UPPER(field) = UPPER(value)
 - ne: field <> value or field is null
 - nee: field <> value (null results not returned)
@@ -31,7 +32,7 @@ Here are the possible filter operators:
 - likeescape: field LIKE 'value' ESCAPE '_' where value can contain replacement character %, the underscore character _ evaluates as an escaped character
 - cilikeescape: UPPER(field) LIKE UPPER('value') ESCAPE '_' where value can contain replacement character %, the underscore character _ evaluates as an escaped character
 - startswith: UPPER(field) LIKE UPPER('value%')
-- between: field BETWEEN value AND value_Range (default when _Range value exists)
+- between: field BETWEEN {fieldname:value} AND {fieldname_Range:value}
 - cibetween: UPPER(field) BETWEEN UPPER(value) AND UPPER(value_Range)
 - notbetween: field NOT BETWEEN value AND value_Range
 - cinotbetween: UPPER(field) NOT BETWEEN UPPER(value) AND UPPER(value_Range)
