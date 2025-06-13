@@ -1,0 +1,61 @@
+Workfront API Context
+
+When make a search api call to workfront, fiters can be a list of key, value, the key could be a fieldname or a filename with operator expression.
+Suffix for specifying expression operators on a field. Value is "_Mod"
+Here are a description for the search operators:
+- lt: Produces the SQL expression field < value
+- lte: Produces the SQL expression field <= value
+- gt: Produces the SQL expression field > value
+- gte: Produces the SQL expression field >= value
+- eq: Produces the SQL expression field = value (default when 1 value exists)
+- cieq: Produces the SQL expression UPPER(field) = UPPER(value)
+- ne: Produces the SQL expression field <> value or field is null
+- nee: Produces the SQL expression field <> value (null results not returned)
+- cine: Produces the SQL expression UPPER(field) <> UPPER(value)
+- contains: Produces the SQL expression field LIKE '%value%'
+- cicontains: Produces the SQL expression UPPER(field) LIKE UPPER('%value%')
+- cicontainsany: Produces the SQL expression UPPER(field) LIKE UPPER('%value1%') OR UPPER(field) LIKE UPPER('%value2%') ... where value1, value2, etc. are the results of value.split(" ")
+- cicontainsall: Produces the SQL expression UPPER(field) LIKE UPPER('%value1%') AND UPPER(field) LIKE UPPER('%value2%') ... where value1, value2, etc. are the results of value.split(" ")
+- cinotcontainsall: Produces the SQL expression UPPER(field) LIKE UPPER('%value1%') AND UPPER(field) LIKE UPPER('%value2%') ... where value1, value2, etc. are the results of value.split(" ")
+- cinotcontainsany: Produces the SQL expression UPPER(field) LIKE UPPER('%value1%') AND UPPER(field) LIKE UPPER('%value2%') ... where value1, value2, etc. are the results of value.split(" ")
+- notcontains: Produces the SQL expression field NOT LIKE '%value%'
+- cinotcontains: Produces the SQL expression UPPER(field) NOT LIKE UPPER('%value%')
+- like: Produces the SQL expression field LIKE 'value' where value can contain replacement characters such as % and _
+- cilike: Produces the SQL expression UPPER(field) LIKE UPPER('value') where value can contain replacement characters such as % and _
+- likeescape: Produces the SQL expression field LIKE 'value' ESCAPE '_' where value can contain replacement character %, the underscore character _ evaluates as an escaped character
+- cilikeescape: Produces the SQL expression UPPER(field) LIKE UPPER('value') ESCAPE '_' where value can contain replacement character %, the underscore character _ evaluates as an escaped character
+- startswith: Produces the SQL expression UPPER(field) LIKE UPPER('value%')
+- soundex: Produces the SQL expression SOUNDEX(field) = SOUNDEX(value)
+- between: Produces the SQL expression field BETWEEN value AND value_Range (default when _Range value exists)
+- cibetween: Produces the SQL expression UPPER(field) BETWEEN UPPER(value) AND UPPER(value_Range)
+- notbetween: Produces the SQL expression field NOT BETWEEN value AND value_Range
+- cinotbetween: Produces the SQL expression UPPER(field) NOT BETWEEN UPPER(value) AND UPPER(value_Range)
+- in: Produces the SQL expression field IN (value1, value2, ..., valuen) (default when multiple value fields exist)
+- ciin: Produces the SQL expression UPPER(field) IN (UPPER(value1), UPPER(value2), ..., UPPER(valuen))
+- notin: Produces the SQL expression field NOT IN (value1, value2, ..., valuen)
+- cinotin: Produces the SQL expression UPPER(field) NOT IN (UPPER(value1), UPPER(value2), ..., UPPER(valuen))
+- bitwiseor: Produces the SQL expression field & value > 0 (useful for checking if any of a group of bits is set)
+- bitwiseand: Produces the SQL expression field & value = value (useful for checking if all of a group of bits is set)
+- bitwisenand: Produces the SQL expression field & value = 0 (useful for checking if none of a group of bits is set)
+- exacttime: Produces the SQL expression field = value (enforces exact time match for date searches)
+- length_lt: Searches based on the string length of the given field being less than value
+- length_eq: Searches based on the string length of the given field being equal to value
+- length_gt: Searches based on the string length of the given field being greater than value
+- isnull: Produces the SQL expression field IS NULL
+- notnull: Produces the SQL expression field IS NOT NULL
+- isblank: Produces the SQL expression field IS NULL OR field = ''
+- notblank: Produces the SQL expression field IS NOT NULL AND field <> ''
+
+Can also use $$Today Wildcard in a query, here is some examples and explalination 
+
+Wildcard value for midnight (12:00AM) of the current Date. Wildcards are useful for Saved Searches. If this value is passed in for any search value, it is replaced with the current date. The following suffixes can also be used to modify this date: [b/e][+/-][# of units]["h" (hour)|"d" (day)|"w" (week)|"m" (month)|"q" (quarter)|"y" (year)]
+
+$$TODAY+1d would equal 12:00AM of the next day
+$$TODAY-1d would equal 12:00AM of the previous day
+$$TODAY+2w would equal 12:00AM of 2 weeks from today
+$$TODAY+2m would equal 12:00AM of 2 months from today
+$$TODAYb "the beginning of today" would equal 12:00AM today
+$$TODAYe "the end of today" would equal 12:00AM tomorrow
+$$TODAYbm "the beginning of the month" would equal 12:00AM of the first day of the month
+$$TODAYe+1w "the end of next week" would equal 12:00AM Sunday following the Saturday of next week
+
