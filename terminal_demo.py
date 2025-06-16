@@ -45,6 +45,8 @@ class WorkfrontTerminalDemo:
         
         try:
             self.tokenizer = AutoTokenizer.from_pretrained(model_path)
+            print(f"✅ Tokenizer loaded - vocab size: {len(self.tokenizer)}")
+            
             self.model = AutoModelForCausalLM.from_pretrained(
                 model_path,
                 torch_dtype=torch.bfloat16,
@@ -52,10 +54,39 @@ class WorkfrontTerminalDemo:
                 trust_remote_code=False
             )
             self.model_path = model_path
-            print("✅ Model loaded successfully!")
+            
+            # Debug model info
+            print(f"✅ Model loaded - parameters: {self.model.num_parameters():,}")
+            print(f"🔍 Model config: {self.model.config.model_type}")
+            print(f"🔍 Model vocab size: {self.model.config.vocab_size}")
+            print(f"🔍 Tokenizer vocab size: {len(self.tokenizer)}")
+            
+            # Check if vocab sizes match
+            if self.model.config.vocab_size != len(self.tokenizer):
+                print("⚠️  WARNING: Model and tokenizer vocab sizes don't match!")
+            
+            # Test a simple generation
+            print("🧪 Testing simple generation...")
+            test_input = "Hello"
+            test_tokens = self.tokenizer(test_input, return_tensors="pt")
+            test_tokens = {k: v.to(self.model.device) for k, v in test_tokens.items()}
+            
+            with torch.no_grad():
+                test_output = self.model.generate(
+                    **test_tokens,
+                    max_new_tokens=10,
+                    do_sample=False,
+                    pad_token_id=self.tokenizer.eos_token_id
+                )
+            
+            test_response = self.tokenizer.decode(test_output[0], skip_special_tokens=True)
+            print(f"🧪 Test generation: '{test_response}'")
+            
             return True
         except Exception as e:
             print(f"❌ Error loading model: {e}")
+            import traceback
+            traceback.print_exc()
             return False
     
     def create_prompt(self, question):
@@ -176,7 +207,13 @@ I need to understand the user's request and determine:
     
     def generate_response(self, prompt):
         """Generate response from model"""
+        print(f"🔍 DEBUG: Prompt length: {len(prompt)} chars")
+        print(f"🔍 DEBUG: Prompt preview: {prompt[:100]}...")
+        
         inputs = self.tokenizer(prompt, return_tensors="pt", truncation=True, max_length=2048)
+        print(f"🔍 DEBUG: Input tokens shape: {inputs['input_ids'].shape}")
+        print(f"🔍 DEBUG: First 10 token IDs: {inputs['input_ids'][0][:10].tolist()}")
+        
         inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
         
         start_time = time.time()
@@ -192,8 +229,14 @@ I need to understand the user's request and determine:
             )
         end_time = time.time()
         
+        print(f"🔍 DEBUG: Output tokens shape: {outputs.shape}")
+        print(f"🔍 DEBUG: Generated token IDs: {outputs[0][inputs['input_ids'].shape[1]:inputs['input_ids'].shape[1]+10].tolist()}")
+        
         full_response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
         generated_part = full_response[len(prompt):].strip()
+        
+        print(f"🔍 DEBUG: Full response length: {len(full_response)}")
+        print(f"🔍 DEBUG: Generated part length: {len(generated_part)}")
         
         return generated_part, end_time - start_time
     
