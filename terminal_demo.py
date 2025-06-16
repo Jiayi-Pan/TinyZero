@@ -588,7 +588,7 @@ I need to understand the user's request and determine:
             end_time = time.time()
 
             base_response = base_tokenizer.decode(outputs[0], skip_special_tokens=True)
-            base_generated = base_response[len(prompt) :].strip()
+            base_generated = self.extract_text_after_thinking(base_response.strip())
             base_time = end_time - start_time
             base_json = self.extract_json_v2(base_generated)
 
@@ -597,7 +597,7 @@ I need to understand the user's request and determine:
                 print(json.dumps(base_json, indent=2))
             else:
                 print(f"❌ Failed to generate valid JSON ({base_time:.2f}s)")
-                print(f"Raw: {base_generated[:150]}...")
+                print(f"Raw: {base_generated}")
 
             print("\n" + "-" * 40)
 
