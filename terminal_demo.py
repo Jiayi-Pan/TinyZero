@@ -536,8 +536,8 @@ I need to understand the user's request and determine:
             # Generate with base model
             inputs = base_tokenizer(
                 prompt, return_tensors="pt", truncation=True, max_length=2048
-            )
-            inputs = {k: v.to(base_model.device) for k, v in inputs.items()}
+            ).to("cuda")
+            # inputs = {k: v.to(base_model.device) for k, v in inputs.items()}
 
             start_time = time.time()
             with torch.no_grad():
