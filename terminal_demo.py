@@ -253,7 +253,8 @@ I need to understand the user's request and determine:
         )
 
         full_response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-        generated_part = full_response[len(prompt) :].strip()
+        # generated_part = full_response[len(prompt) :].strip()
+        generated_part = full_response.strip()
 
         print(f"🔍 DEBUG: Full response length: {len(full_response)}")
         print(f"🔍 DEBUG: Generated part length: {len(generated_part)}")
