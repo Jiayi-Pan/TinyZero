@@ -81,9 +81,9 @@ class WorkfrontTerminalDemo:
             with torch.no_grad():
                 test_output = self.model.generate(
                     **test_tokens,
-                    max_new_tokens=10,
-                    do_sample=False,
-                    pad_token_id=self.tokenizer.eos_token_id,
+                    max_new_tokens=200,
+                    # do_sample=False,
+                    # pad_token_id=self.tokenizer.eos_token_id,
                 )
 
             test_response = self.tokenizer.decode(
@@ -228,9 +228,7 @@ I need to understand the user's request and determine:
         print(f"🔍 DEBUG: Prompt length: {len(prompt)} chars")
         print(f"🔍 DEBUG: Prompt preview: {prompt[:100]}...")
 
-        inputs = self.tokenizer(
-            prompt, return_tensors="pt", truncation=True, max_length=2048
-        )
+        inputs = self.tokenizer(prompt, return_tensors="pt")
         print(f"🔍 DEBUG: Input tokens shape: {inputs['input_ids'].shape}")
         print(f"🔍 DEBUG: First 10 token IDs: {inputs['input_ids'][0][:10].tolist()}")
 
@@ -240,12 +238,12 @@ I need to understand the user's request and determine:
         with torch.no_grad():
             outputs = self.model.generate(
                 **inputs,
-                max_new_tokens=512,
-                do_sample=True,
-                temperature=0.1,
-                top_p=0.9,
-                pad_token_id=self.tokenizer.eos_token_id,
-                eos_token_id=self.tokenizer.eos_token_id,
+                max_new_tokens=2048,
+                # do_sample=True,
+                # temperature=0.1,
+                # top_p=0.9,
+                # pad_token_id=self.tokenizer.eos_token_id,
+                # eos_token_id=self.tokenizer.eos_token_id,
             )
         end_time = time.time()
 
@@ -266,7 +264,7 @@ I need to understand the user's request and determine:
         """Extract JSON from response - looking for <final_json> tags as trained"""
         try:
             print(f"🔍 DEBUG: Response length: {len(response)} chars")
-            print(f"🔍 DEBUG: First 200 chars: {response[:200]}")
+            # print(f"🔍 DEBUG: First 200 chars: {response[200:]
 
             # First try to find <final_json> tags (as the model was trained)
             if "<final_json>" in response and "</final_json>" in response:
@@ -535,20 +533,18 @@ I need to understand the user's request and determine:
             prompt = self.create_prompt(question)
 
             # Generate with base model
-            inputs = base_tokenizer(
-                prompt, return_tensors="pt", truncation=True, max_length=2048
-            )
+            inputs = base_tokenizer(prompt, return_tensors="pt")
             inputs = {k: v.to(base_model.device) for k, v in inputs.items()}
 
             start_time = time.time()
             with torch.no_grad():
                 outputs = base_model.generate(
                     **inputs,
-                    max_new_tokens=512,
-                    do_sample=True,
-                    temperature=0.1,
-                    top_p=0.9,
-                    pad_token_id=base_tokenizer.eos_token_id,
+                    max_new_tokens=2048,
+                    # do_sample=True,
+                    # temperature=0.1,
+                    # top_p=0.9,
+                    # pad_token_id=base_tokenizer.eos_token_id,
                 )
             end_time = time.time()
 
