@@ -1,5 +1,3 @@
-
-
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import json
@@ -16,19 +14,26 @@ class WorkfrontTerminalDemo:
         
     def find_checkpoints(self):
         """Find available model checkpoints"""
-        patterns = [
+        trained_checkpoints = []
+        
+        # Look for your specific checkpoint structure
+        checkpoint_patterns = [
             "./checkpoints/*/actor/global_step_*",
-            "./checkpoints_optimized/*/actor/global_step_*", 
+            "./checkpoints_optimized/*/actor/global_step_*",
+            "/home/workfrontadmin/checkpoints/TinyZero/*/actor/global_step_*",
             "./sft_*_model"
         ]
         
-        trained_checkpoints = []
-        for pattern in patterns:
-            trained_checkpoints.extend(glob.glob(pattern))
+        for pattern in checkpoint_patterns:
+            found = glob.glob(pattern)
+            trained_checkpoints.extend(found)
         
-        # Sort trained checkpoints by step number
+        # Remove duplicates and sort by step number
+        trained_checkpoints = list(set(trained_checkpoints))
         trained_checkpoints = sorted(trained_checkpoints, key=lambda x: int(x.split('global_step_')[-1]) if 'global_step_' in x else 0)
-        print("Trained checkpoints: ", trained_checkpoints)
+        
+        print("🔍 Found trained checkpoints:", trained_checkpoints)
+        
         # Add base model at the end
         all_checkpoints = trained_checkpoints + ["Qwen/Qwen2.5-1.5B-Instruct"]
         return all_checkpoints
@@ -283,7 +288,8 @@ I need to understand the user's request and determine:
         for i, checkpoint in enumerate(checkpoints):
             if "global_step_" in checkpoint:
                 step_num = checkpoint.split('global_step_')[-1]
-                print(f"   {i+1}. 🟢 TRAINED MODEL - Step {step_num} ({Path(checkpoint).name})")
+                checkpoint_name = checkpoint.split('/')[-3] if len(checkpoint.split('/')) > 3 else "checkpoint"
+                print(f"   {i+1}. 🟢 TRAINED MODEL - Step {step_num} ({checkpoint_name})")
             elif checkpoint == "Qwen/Qwen2.5-1.5B-Instruct":
                 print(f"   {i+1}. 🔵 BASE MODEL - {checkpoint}")
             else:
