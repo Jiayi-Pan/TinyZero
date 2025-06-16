@@ -59,28 +59,33 @@ class WorkfrontTerminalDemo:
             return False
     
     def create_prompt(self, question):
-        """Create prompt for the model using the same format as training data"""
+        """Create prompt for the model using the EXACT same format as training data"""
         # Load context files (same as in fetch_data.py)
         try:
             with open("verl/utils/dataset/context.txt", "r") as f:
                 workfront_context = f.read().strip()
-        except:
+            print(f"🔍 DEBUG: Loaded context.txt ({len(workfront_context)} chars)")
+        except Exception as e:
             workfront_context = "Workfront API Context - Context file not found"
+            print(f"⚠️ DEBUG: Could not load context.txt: {e}")
         
         # Simple obj_code detection for context
-        obj_code = "TASK"  # Default
-        if any(word in question.lower() for word in ["project", "proj"]):
-            obj_code = "PROJ"
-        elif any(word in question.lower() for word in ["user", "person", "people"]):
+        obj_code = "PROJ"  # Default to PROJ for most queries
+        if any(word in question.lower() for word in ["task", "tasks"]):
+            obj_code = "TASK"
+        elif any(word in question.lower() for word in ["user", "person", "people", "role"]):
             obj_code = "USER"
         
         try:
             with open(f"verl/utils/dataset/{obj_code.lower()}_context.txt", "r") as f:
                 obj_code_context = f.read().strip()
-        except:
+            print(f"🔍 DEBUG: Loaded {obj_code.lower()}_context.txt ({len(obj_code_context)} chars)")
+        except Exception as e:
             obj_code_context = f"{obj_code} context not found"
+            print(f"⚠️ DEBUG: Could not load {obj_code.lower()}_context.txt: {e}")
         
-        return f"""You are a helpful AI assistant designed to convert natural language queries into structured JSON commands for querying the Workfront project management system. You use Workfront's custom object names and metadata to do the same using the context given below.
+        # Use the EXACT format from fetch_data.py make_prefix function
+        prompt = f"""You are a helpful AI assistant designed to convert natural language queries into structured JSON commands for querying the Workfront project management system. You use Workfront's custom object names and metadata to do the same using the context given below.
 
 Your role is to interpret a user's natural language request, determine the correct object (objCode like TASK, PROJ, or USER), extract relevant fields (the attributes to display), and construct appropriate filters (conditions the data must satisfy). 
 
@@ -165,6 +170,9 @@ I need to understand the user's request and determine:
 2. What specific fields they need to see
 3. What conditions (filters) they want to apply
 """
+        
+        print(f"🔍 DEBUG: Using training prompt format ({len(prompt)} chars)")
+        return prompt
     
     def generate_response(self, prompt):
         """Generate response from model"""
@@ -192,12 +200,16 @@ I need to understand the user's request and determine:
     def extract_json(self, response):
         """Extract JSON from response - looking for <final_json> tags as trained"""
         try:
+            print(f"🔍 DEBUG: Response length: {len(response)} chars")
+            print(f"🔍 DEBUG: First 200 chars: {response[:200]}")
+            
             # First try to find <final_json> tags (as the model was trained)
             if "<final_json>" in response and "</final_json>" in response:
                 start_tag = response.find("<final_json>")
                 end_tag = response.find("</final_json>")
                 if start_tag != -1 and end_tag != -1:
                     json_section = response[start_tag + 12:end_tag].strip()
+                    print(f"🔍 DEBUG: Found final_json section: {json_section[:100]}...")
                     
                     # Now extract the JSON from within the ```json``` blocks
                     if "```json" in json_section:
@@ -205,25 +217,30 @@ I need to understand the user's request and determine:
                         json_end = json_section.find("```", json_start)
                         if json_end != -1:
                             json_str = json_section[json_start:json_end].strip()
+                            print(f"🔍 DEBUG: Extracted JSON: {json_str[:100]}...")
                             return json.loads(json_str)
             
-            # Fallback: look for ```json blocks anywhere
+            # Fallback: Look for ```json blocks anywhere
             if "```json" in response:
                 start = response.find("```json") + 7
                 end = response.find("```", start)
                 if end != -1:
                     json_str = response[start:end].strip()
+                    print(f"🔍 DEBUG: Fallback JSON extraction: {json_str[:100]}...")
                     return json.loads(json_str)
             
-            # Last resort: find any JSON-like structure
+            # Last resort: Look for any JSON-like structure
             if "{" in response and "}" in response:
                 start = response.find("{")
                 end = response.rfind("}") + 1
                 json_str = response[start:end]
+                print(f"🔍 DEBUG: Last resort JSON: {json_str[:100]}...")
                 return json.loads(json_str)
                 
+            print("🔍 DEBUG: No JSON structure found")
             return None
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as e:
+            print(f"🔍 DEBUG: JSON decode error: {e}")
             return None
     
     def print_header(self):
