@@ -1,8 +1,4 @@
-#!/usr/bin/env python3
-"""
-Interactive Terminal Demo for Workfront AI Assistant
-Perfect for cluster-only presentations - no web interface needed!
-"""
+
 
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
@@ -55,22 +51,112 @@ class WorkfrontTerminalDemo:
             return False
     
     def create_prompt(self, question):
-        """Create prompt for the model"""
-        return f"""You are a Workfront API assistant. Convert natural language queries into structured JSON API calls.
+        """Create prompt for the model using the same format as training data"""
+        # Load context files (same as in fetch_data.py)
+        try:
+            with open("verl/utils/dataset/context.txt", "r") as f:
+                workfront_context = f.read().strip()
+        except:
+            workfront_context = "Workfront API Context - Context file not found"
+        
+        # Simple obj_code detection for context
+        obj_code = "TASK"  # Default
+        if any(word in question.lower() for word in ["project", "proj"]):
+            obj_code = "PROJ"
+        elif any(word in question.lower() for word in ["user", "person", "people"]):
+            obj_code = "USER"
+        
+        try:
+            with open(f"verl/utils/dataset/{obj_code.lower()}_context.txt", "r") as f:
+                obj_code_context = f.read().strip()
+        except:
+            obj_code_context = f"{obj_code} context not found"
+        
+        return f"""You are a helpful AI assistant designed to convert natural language queries into structured JSON commands for querying the Workfront project management system. You use Workfront's custom object names and metadata to do the same using the context given below.
 
-TASK: Convert this query to Workfront API JSON:
-"{question}"
+Your role is to interpret a user's natural language request, determine the correct object (objCode like TASK, PROJ, or USER), extract relevant fields (the attributes to display), and construct appropriate filters (conditions the data must satisfy). 
 
-Required JSON format:
+You will take the user's natural language prompt and give a structured JSON response. ALWAYS include just the final JSON with the correct json structure in <final_json> tags. The tags should always be called <final_json> and always inside the tags use ```json``` to indicate the json structure.  Then close it with </final_json> tags.
+USE STRUCTURE EXACTLY LIKE BELOW:
+
+<final_json>
 ```json
 {{
-  "objCode": "TASK|PROJ|USER",
-  "fields": ["relevant", "fields"],
-  "filters": {{"condition": "value"}}
+  "objCode": "TASK | PROJ | USER", // Choose based on what the user is asking about
+  "fields": [],        // Include ALL relevant fields mentioned in the query      
+  "filters": {{}} // Include ALL conditions mentioned in the query
 }}
 ```
+</final_json>
+The JSON must be wrapped in triple backticks to indicate code formatting.
 
-Answer:"""
+Here are are some examples:
+
+Example 1:
+User Prompt: What are all the tasks with high priority due next week?
+
+A:
+<final_json>
+```json
+{{
+  "objCode": "TASK",
+  "fields": ["ID", "name", "priority", "plannedCompletionDate"],
+  "filters": {{
+        "priority": 3,
+        "actualCompletionDate_Mod": "isnull",
+        "plannedCompletionDate": "$$TODAYb+1w",
+        "plannedCompletionDate_Mod": "between",
+        "plannedCompletionDate_Range": "$$TODAYe+1w"
+  }}
+}}
+```
+</final_json>
+
+Example 2:
+User Prompt: Show me all projects that are currently on hold
+
+A:
+<final_json>
+```json
+{{
+  "objCode": "PROJ",
+  "fields": ["ID", "name", "status", "plannedCompletionDate"],
+  "filters": {{
+        "status": "OHD"
+  }}
+}}
+```
+</final_json>
+
+Example 3:
+User Prompt: Find users with email addresses containing '@company.com'
+
+A:
+<final_json>
+```json
+{{
+  "objCode": "USER",
+  "fields": ["ID", "name", "emailAddr", "username"],
+  "filters": {{
+        "emailAddr_Mod": "cicontains",
+        "emailAddr": "@company.com"
+  }}
+}}
+```
+</final_json>
+
+{workfront_context}
+{obj_code_context}
+
+User: {question}
+Assistant: I'll help you with defining the correct JSON object with the correct objCode, fields, and filters.
+
+<thinking>
+I need to understand the user's request and determine:
+1. Which objCode they are asking about
+2. What specific fields they need to see
+3. What conditions (filters) they want to apply
+"""
     
     def generate_response(self, prompt):
         """Generate response from model"""
@@ -96,8 +182,24 @@ Answer:"""
         return generated_part, end_time - start_time
     
     def extract_json(self, response):
-        """Extract JSON from response"""
+        """Extract JSON from response - looking for <final_json> tags as trained"""
         try:
+            # First try to find <final_json> tags (as the model was trained)
+            if "<final_json>" in response and "</final_json>" in response:
+                start_tag = response.find("<final_json>")
+                end_tag = response.find("</final_json>")
+                if start_tag != -1 and end_tag != -1:
+                    json_section = response[start_tag + 12:end_tag].strip()
+                    
+                    # Now extract the JSON from within the ```json``` blocks
+                    if "```json" in json_section:
+                        json_start = json_section.find("```json") + 7
+                        json_end = json_section.find("```", json_start)
+                        if json_end != -1:
+                            json_str = json_section[json_start:json_end].strip()
+                            return json.loads(json_str)
+            
+            # Fallback: look for ```json blocks anywhere
             if "```json" in response:
                 start = response.find("```json") + 7
                 end = response.find("```", start)
@@ -105,6 +207,7 @@ Answer:"""
                     json_str = response[start:end].strip()
                     return json.loads(json_str)
             
+            # Last resort: find any JSON-like structure
             if "{" in response and "}" in response:
                 start = response.find("{")
                 end = response.rfind("}") + 1
@@ -267,15 +370,40 @@ Answer:"""
             base_model_path = "Qwen/Qwen2.5-1.5B-Instruct"
             print(f"\n🔄 Loading base model: {base_model_path}")
             print("   This may take 30-60 seconds...")
+            print(f"🔍 DEBUG: Your trained model path: {self.model_path}")
+            print(f"🔍 DEBUG: Base model path: {base_model_path}")
             
             try:
-                base_tokenizer = AutoTokenizer.from_pretrained(base_model_path)
+                base_tokenizer = AutoTokenizer.from_pretrained(
+                    base_model_path,
+                    cache_dir=None,
+                    force_download=False
+                )
                 base_model = AutoModelForCausalLM.from_pretrained(
                     base_model_path,
                     torch_dtype=torch.bfloat16,
-                    device_map="auto"
+                    device_map="auto",
+                    cache_dir=None,
+                    force_download=False
                 )
                 print("✅ Base model loaded!")
+                print(f"🔍 DEBUG: Base model config: {base_model.config.name_or_path}")
+                print(f"🔍 DEBUG: Trained model config: {self.model.config.name_or_path}")
+                
+                # Check if models are actually different
+                base_param_count = sum(p.numel() for p in base_model.parameters())
+                trained_param_count = sum(p.numel() for p in self.model.parameters())
+                print(f"🔍 DEBUG: Base model parameters: {base_param_count:,}")
+                print(f"🔍 DEBUG: Trained model parameters: {trained_param_count:,}")
+                
+                # Check a few parameter values to see if they're different
+                base_first_param = next(base_model.parameters()).flatten()[:5]
+                trained_first_param = next(self.model.parameters()).flatten()[:5]
+                print(f"🔍 DEBUG: Base model first 5 params: {base_first_param}")
+                print(f"🔍 DEBUG: Trained model first 5 params: {trained_first_param}")
+                
+                params_different = not torch.allclose(base_first_param, trained_first_param, atol=1e-6)
+                print(f"🔍 DEBUG: Models have different parameters: {params_different}")
             except Exception as e:
                 print(f"❌ Error loading base model: {e}")
                 return
