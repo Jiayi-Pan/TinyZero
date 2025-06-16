@@ -74,8 +74,8 @@ class WorkfrontTerminalDemo:
             # Test a simple generation
             print("🧪 Testing simple generation...")
             test_input = "Hello"
-            test_tokens = self.tokenizer(test_input, return_tensors="pt")
-            test_tokens = {k: v.to(self.model.device) for k, v in test_tokens.items()}
+            test_tokens = self.tokenizer(test_input, return_tensors="pt").to("cuda")
+            # test_tokens = {k: v.to(self.model.device) for k, v in test_tokens.items()}
 
             with torch.no_grad():
                 test_output = self.model.generate(
@@ -492,7 +492,7 @@ I need to understand the user's request and determine:
                     device_map="auto",
                     cache_dir=None,
                     force_download=False,
-                )
+                ).to("cuda")
                 print("✅ Base model loaded!")
                 print(f"🔍 DEBUG: Base model config: {base_model.config.name_or_path}")
                 print(
