@@ -58,7 +58,7 @@ class WorkfrontTerminalDemo:
                 torch_dtype=torch.bfloat16,
                 device_map="auto",
                 trust_remote_code=False,
-            ).to("cuda")
+            ).to("cuda:0")
             self.model_path = model_path
 
             # Debug model info
@@ -74,7 +74,7 @@ class WorkfrontTerminalDemo:
             # Test a simple generation
             print("🧪 Testing simple generation...")
             test_input = "Hello"
-            test_tokens = self.tokenizer(test_input, return_tensors="pt").to("cuda")
+            test_tokens = self.tokenizer(test_input, return_tensors="pt").to("cuda:0")
             # test_tokens = {k: v.to(self.model.device) for k, v in test_tokens.items()}
 
             with torch.no_grad():
@@ -229,7 +229,7 @@ I need to understand the user's request and determine:
 
         inputs = self.tokenizer(
             prompt, return_tensors="pt", truncation=True, max_length=2048
-        ).to("cuda")
+        ).to("cuda:0")
         print(f"🔍 DEBUG: Input tokens shape: {inputs['input_ids'].shape}")
         # print(f"🔍 DEBUG: First 10 token IDs: {inputs['input_ids'][0][:10].tolist()}")
 
@@ -492,7 +492,7 @@ I need to understand the user's request and determine:
                     device_map="auto",
                     cache_dir=None,
                     force_download=False,
-                ).to("cuda")
+                ).to("cuda:0")
                 print("✅ Base model loaded!")
                 print(f"🔍 DEBUG: Base model config: {base_model.config.name_or_path}")
                 print(
@@ -536,7 +536,7 @@ I need to understand the user's request and determine:
             # Generate with base model
             inputs = base_tokenizer(
                 prompt, return_tensors="pt", truncation=True, max_length=2048
-            ).to("cuda")
+            ).to("cuda:0")
             # inputs = {k: v.to(base_model.device) for k, v in inputs.items()}
 
             start_time = time.time()
