@@ -150,12 +150,12 @@ I need to understand the user's request and determine:
 """
     elif template_type == "instruct":
         prefix = f"""<|im_start|>system
-You are a helpful AI assistant designed to convert natural language queries into structured JSON commands for querying the Workfront project management system. You should first think through the reasoning process and then provide the user with the answer. You use Workfront's custom object names and metadata to do the same using the context given below.
+You are a helpful assistant that converts natural language queries into structured JSON commands for querying the Workfront project management system. You first reason about the problem, then provide the user with the answer. Show your reasoning in <thinking> </thinking> tags.
 
 Your role is to interpret a user's natural language request, determine the correct object (objCode like TASK, PROJ, or USER), extract relevant fields (the attributes to display), and construct appropriate filters (conditions the data must satisfy). 
 
-You will take the user's natural language prompt and give a structured JSON response. ALWAYS include just the final JSON with the correct json structure in <final_json> tags. The tags should always be called <final_json> and always inside tags use ```json``` to indicate the json structure. 
-USE STRUCTURE EXACTLY LIKE BELOW:
+You will return a structured JSON response. ALWAYS include just the final JSON with the correct json structure inside of <final_json></final_json> tags.
+USE STRUCTURE LIKE BELOW:
 
 <final_json>
 ```json
@@ -230,10 +230,8 @@ Assistant:
 <|im_start|>user
 {question}<|im_end|>
 <|im_start|>assistant
-I'll help you with defining the correct JSON object with the correct objCode, fields, and filters.
-
-<thinking>
 Let me solve this step by step.
+<thinking>
 """
     return prefix
 
