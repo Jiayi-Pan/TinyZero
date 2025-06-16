@@ -212,8 +212,9 @@ Answer:"""
         print("1. Run example queries")
         print("2. Interactive mode (type your own)")
         print("3. Presentation mode (auto-run examples)")
+        print("4. Compare with base model (same query, both models)")
         
-        mode = input("\nSelect mode (1-3): ")
+        mode = input("\nSelect mode (1-4): ")
         
         if mode == "1":
             # Show examples menu
@@ -256,6 +257,105 @@ Answer:"""
                 print(f"\n🎯 Example {i+1}/{5}")
                 input("Press Enter for next query...")
                 self.demo_query(query)
+        
+        elif mode == "4":
+            # Comparison mode
+            print("\n🔄 COMPARISON MODE")
+            print("This will test the same query on both your trained model and the base model")
+            
+            # Load base model for comparison
+            base_model_path = "Qwen/Qwen2.5-1.5B-Instruct"
+            print(f"\n🔄 Loading base model: {base_model_path}")
+            print("   This may take 30-60 seconds...")
+            
+            try:
+                base_tokenizer = AutoTokenizer.from_pretrained(base_model_path)
+                base_model = AutoModelForCausalLM.from_pretrained(
+                    base_model_path,
+                    torch_dtype=torch.bfloat16,
+                    device_map="auto"
+                )
+                print("✅ Base model loaded!")
+            except Exception as e:
+                print(f"❌ Error loading base model: {e}")
+                return
+            
+            # Get query from user
+            question = input("\n🤔 Enter your question to compare both models: ")
+            if not question.strip():
+                print("No question provided!")
+                return
+            
+            print(f"\n📝 COMPARING: {question}")
+            print("=" * 80)
+            
+            # Test base model first
+            print("🔵 BASE MODEL (Pretrained)")
+            print("-" * 40)
+            prompt = self.create_prompt(question)
+            
+            # Generate with base model
+            inputs = base_tokenizer(prompt, return_tensors="pt", truncation=True, max_length=2048)
+            inputs = {k: v.to(base_model.device) for k, v in inputs.items()}
+            
+            start_time = time.time()
+            with torch.no_grad():
+                outputs = base_model.generate(
+                    **inputs,
+                    max_new_tokens=512,
+                    do_sample=True,
+                    temperature=0.1,
+                    top_p=0.9,
+                    pad_token_id=base_tokenizer.eos_token_id
+                )
+            end_time = time.time()
+            
+            base_response = base_tokenizer.decode(outputs[0], skip_special_tokens=True)
+            base_generated = base_response[len(prompt):].strip()
+            base_time = end_time - start_time
+            base_json = self.extract_json(base_generated)
+            
+            if base_json:
+                print(f"✅ Generated in {base_time:.2f}s")
+                print(json.dumps(base_json, indent=2))
+            else:
+                print(f"❌ Failed to generate valid JSON ({base_time:.2f}s)")
+                print(f"Raw: {base_generated[:150]}...")
+            
+            print("\n" + "-" * 40)
+            
+            # Test trained model
+            print("🟢 TRAINED MODEL (Your Model)")
+            print("-" * 40)
+            trained_response, trained_time = self.generate_response(prompt)
+            trained_json = self.extract_json(trained_response)
+            
+            if trained_json:
+                print(f"✅ Generated in {trained_time:.2f}s")
+                print(json.dumps(trained_json, indent=2))
+            else:
+                print(f"❌ Failed to generate valid JSON ({trained_time:.2f}s)")
+                print(f"Raw: {trained_response[:150]}...")
+            
+            # Summary
+            print("\n🏆 COMPARISON SUMMARY")
+            print("-" * 40)
+            base_success = base_json is not None
+            trained_success = trained_json is not None
+            
+            print(f"Base Model:    {'✅ Success' if base_success else '❌ Failed'} ({base_time:.2f}s)")
+            print(f"Trained Model: {'✅ Success' if trained_success else '❌ Failed'} ({trained_time:.2f}s)")
+            
+            if trained_success and not base_success:
+                print("🎉 IMPROVEMENT: Your trained model succeeded where base model failed!")
+            elif trained_success and base_success:
+                print("🎯 BOTH SUCCESSFUL: Compare the JSON quality above")
+            elif not trained_success and base_success:
+                print("⚠️  Base model performed better on this query")
+            else:
+                print("❌ Both models failed on this query")
+            
+            print("=" * 80)
         
         print("\n🎉 Demo completed! Thank you!")
 
