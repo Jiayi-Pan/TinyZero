@@ -58,7 +58,7 @@ class WorkfrontTerminalDemo:
                 torch_dtype=torch.bfloat16,
                 device_map="auto",
                 trust_remote_code=False,
-            )
+            ).to("cuda")
             self.model_path = model_path
 
             # Debug model info
@@ -229,11 +229,11 @@ I need to understand the user's request and determine:
 
         inputs = self.tokenizer(
             prompt, return_tensors="pt", truncation=True, max_length=2048
-        )
+        ).to("cuda")
         print(f"🔍 DEBUG: Input tokens shape: {inputs['input_ids'].shape}")
-        print(f"🔍 DEBUG: First 10 token IDs: {inputs['input_ids'][0][:10].tolist()}")
+        # print(f"🔍 DEBUG: First 10 token IDs: {inputs['input_ids'][0][:10].tolist()}")
 
-        inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
+        # inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
 
         start_time = time.time()
         with torch.no_grad():
@@ -390,6 +390,7 @@ I need to understand the user's request and determine:
                 model_idx = int(choice) - 1
                 if 0 <= model_idx < len(checkpoints):
                     selected_model = checkpoints[model_idx]
+                    print(f"🔍 DEBUG: Selected model: {selected_model}")
                     break
                 else:
                     print("Invalid choice!")
