@@ -597,7 +597,8 @@ I need to understand the user's request and determine:
 
                     if base_json:
                         print(f"✅ Generated in {base_time:.2f}s")
-                        print(json.dumps(base_json, indent=2))
+                        print(base_generated)
+                        # print(json.dumps(base_json, indent=2))
                     else:
                         print(f"❌ Failed to generate valid JSON ({base_time:.2f}s)")
                         print(f"Raw: {base_generated}")
@@ -612,10 +613,11 @@ I need to understand the user's request and determine:
 
                     if trained_json:
                         print(f"✅ Generated in {trained_time:.2f}s")
-                        print(json.dumps(trained_json, indent=2))
+                        # print(json.dumps(trained_json, indent=2))
+                        print(trained_response)
                     else:
                         print(f"❌ Failed to generate valid JSON ({trained_time:.2f}s)")
-                        print(f"Raw: {trained_response[:150]}...")
+                        print(f"Raw: {trained_response}")
 
                     # Summary
                     print("\n🏆 COMPARISON SUMMARY")
