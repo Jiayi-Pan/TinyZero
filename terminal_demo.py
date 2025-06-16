@@ -265,6 +265,7 @@ I need to understand the user's request and determine:
         try:
             print(f"🔍 DEBUG: Response length: {len(response)} chars")
             # print(f"🔍 DEBUG: First 200 chars: {response[200:]
+            print(f"🔍 DEBUG: Response: {response}")
 
             # First try to find <final_json> tags (as the model was trained)
             if "<final_json>" in response and "</final_json>" in response:
