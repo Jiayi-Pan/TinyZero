@@ -74,8 +74,8 @@ class WorkfrontTerminalDemo:
             # Test a simple generation
             print("🧪 Testing simple generation...")
             test_input = "Hello"
-            test_tokens = self.tokenizer(test_input, return_tensors="pt").to("cuda:0")
-            # test_tokens = {k: v.to(self.model.device) for k, v in test_tokens.items()}
+            test_tokens = self.tokenizer(test_input, return_tensors="pt")
+            test_tokens = {k: v.to(self.model.device) for k, v in test_tokens.items()}
 
             with torch.no_grad():
                 test_output = self.model.generate(
