@@ -221,7 +221,7 @@ I need to understand the user's request and determine:
 3. What conditions (filters) they want to apply
 """
 
-        print(f"🔍 DEBUG: Using training prompt format ({len(prompt)} chars)")
+        # print(f"🔍 DEBUG: Using training prompt format ({len(prompt)} chars)")
         return prompt
 
     def extract_text_after_thinking(self, solution_str):
@@ -232,12 +232,12 @@ I need to understand the user's request and determine:
 
     def generate_response(self, prompt):
         """Generate response from model"""
-        print(f"🔍 DEBUG: Prompt length: {len(prompt)} chars")
-        print(f"🔍 DEBUG: Prompt preview: {prompt[:100]}...")
+        # print(f"🔍 DEBUG: Prompt length: {len(prompt)} chars")
+        # print(f"🔍 DEBUG: Prompt preview: {prompt[:100]}...")
 
         inputs = self.tokenizer(prompt, return_tensors="pt")
-        print(f"🔍 DEBUG: Input tokens shape: {inputs['input_ids'].shape}")
-        print(f"🔍 DEBUG: First 10 token IDs: {inputs['input_ids'][0][:10].tolist()}")
+        # print(f"🔍 DEBUG: Input tokens shape: {inputs['input_ids'].shape}")
+        # print(f"🔍 DEBUG: First 10 token IDs: {inputs['input_ids'][0][:10].tolist()}")
 
         inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
 
@@ -254,17 +254,17 @@ I need to understand the user's request and determine:
             )
         end_time = time.time()
 
-        print(f"🔍 DEBUG: Output tokens shape: {outputs.shape}")
-        print(
-            f"🔍 DEBUG: Generated token IDs: {outputs[0][inputs['input_ids'].shape[1]:inputs['input_ids'].shape[1]+10].tolist()}"
-        )
+        # print(f"🔍 DEBUG: Output tokens shape: {outputs.shape}")
+        # print(
+        #     f"🔍 DEBUG: Generated token IDs: {outputs[0][inputs['input_ids'].shape[1]:inputs['input_ids'].shape[1]+10].tolist()}"
+        # )
 
         full_response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
         # generated_part = full_response[len(prompt) :].strip()
         generated_part = self.extract_text_after_thinking(full_response.strip())
 
-        print(f"🔍 DEBUG: Full response length: {len(full_response)}")
-        print(f"🔍 DEBUG: Generated part length: {len(generated_part)}")
+        # print(f"🔍 DEBUG: Full response length: {len(full_response)}")
+        # print(f"🔍 DEBUG: Generated part length: {len(generated_part)}")
 
         return generated_part, end_time - start_time
 
