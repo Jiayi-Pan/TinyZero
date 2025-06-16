@@ -4,7 +4,7 @@ echo "🚀 Starting Workfront AI Assistant Terminal Demo"
 echo "================================================"
 
 # Check if we're in the right directory
-if [ ! -f "workfront_data.json" ]; then
+if [ ! -f "verl/utils/dataset/workfront_data.json" ]; then
     echo "⚠️  Please run from the TinyZeroRL directory"
     exit 1
 fi
