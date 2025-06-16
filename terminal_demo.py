@@ -1,3 +1,4 @@
+import re
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import json
@@ -223,6 +224,12 @@ I need to understand the user's request and determine:
         print(f"🔍 DEBUG: Using training prompt format ({len(prompt)} chars)")
         return prompt
 
+    def extract_text_after_thinking(self, solution_str):
+        # Extract all text after the <thinking> tag
+        thinking_start = solution_str.find("<thinking>")
+        position_to_slice = thinking_start
+        return solution_str[position_to_slice:].strip()
+
     def generate_response(self, prompt):
         """Generate response from model"""
         print(f"🔍 DEBUG: Prompt length: {len(prompt)} chars")
@@ -254,12 +261,42 @@ I need to understand the user's request and determine:
 
         full_response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
         # generated_part = full_response[len(prompt) :].strip()
-        generated_part = full_response.strip()
+        generated_part = self.extract_text_after_thinking(full_response.strip())
 
         print(f"🔍 DEBUG: Full response length: {len(full_response)}")
         print(f"🔍 DEBUG: Generated part length: {len(generated_part)}")
 
         return generated_part, end_time - start_time
+
+    def strip_json_comments(self, json_str):
+        """Remove // and /* */ style comments from JSON string."""
+        # Remove single-line comments (// comment)
+        json_str = re.sub(r"//.*?(?=\n|$)", "", json_str)
+
+        # Remove multi-line comments (/* comment */)
+        json_str = re.sub(r"/\*.*?\*/", "", json_str, flags=re.DOTALL)
+
+        return json_str
+
+    def extract_json_v2(self, answer):
+        """Extract ```json{}``` from the answer string."""
+        # Use DOTALL flag to make . match newlines as well
+        json_pattern = r"```json\s*(.*?)\s*```"
+        match = re.search(json_pattern, answer, re.DOTALL)
+        if match:
+            json_str = match.group(1).strip()
+
+            # Try parsing as-is first
+            try:
+                return json.loads(json_str)
+            except json.JSONDecodeError:
+                # If that fails, try stripping comments
+                try:
+                    cleaned_json = self.strip_json_comments(json_str)
+                    return json.loads(cleaned_json)
+                except json.JSONDecodeError:
+                    return None
+        return None
 
     def extract_json(self, response):
         """Extract JSON from response - looking for <final_json> tags as trained"""
@@ -339,7 +376,7 @@ I need to understand the user's request and determine:
                 print(f"   {thinking}")
 
         # Extract and display JSON
-        json_result = self.extract_json(response)
+        json_result = self.extract_json_v2(response)
 
         if json_result:
             print(f"\n✅ GENERATED API CALL:")
@@ -553,7 +590,7 @@ I need to understand the user's request and determine:
             base_response = base_tokenizer.decode(outputs[0], skip_special_tokens=True)
             base_generated = base_response[len(prompt) :].strip()
             base_time = end_time - start_time
-            base_json = self.extract_json(base_generated)
+            base_json = self.extract_json_v2(base_generated)
 
             if base_json:
                 print(f"✅ Generated in {base_time:.2f}s")
@@ -568,7 +605,7 @@ I need to understand the user's request and determine:
             print("🟢 TRAINED MODEL (Your Model)")
             print("-" * 40)
             trained_response, trained_time = self.generate_response(prompt)
-            trained_json = self.extract_json(trained_response)
+            trained_json = self.extract_json_v2(trained_response)
 
             if trained_json:
                 print(f"✅ Generated in {trained_time:.2f}s")
