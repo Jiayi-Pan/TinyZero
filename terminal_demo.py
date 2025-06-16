@@ -22,13 +22,16 @@ class WorkfrontTerminalDemo:
             "./sft_*_model"
         ]
         
-        checkpoints = []
+        trained_checkpoints = []
         for pattern in patterns:
-            checkpoints.extend(glob.glob(pattern))
+            trained_checkpoints.extend(glob.glob(pattern))
         
-        # Add base model
-        checkpoints.append("Qwen/Qwen2.5-1.5B-Instruct")
-        return sorted(checkpoints)
+        # Sort trained checkpoints by step number
+        trained_checkpoints = sorted(trained_checkpoints, key=lambda x: int(x.split('global_step_')[-1]) if 'global_step_' in x else 0)
+        print("Trained checkpoints: ", trained_checkpoints)
+        # Add base model at the end
+        all_checkpoints = trained_checkpoints + ["Qwen/Qwen2.5-1.5B-Instruct"]
+        return all_checkpoints
     
     def load_model(self, model_path):
         """Load model and tokenizer"""
@@ -278,7 +281,13 @@ I need to understand the user's request and determine:
         
         print("🔍 Available Models:")
         for i, checkpoint in enumerate(checkpoints):
-            print(f"   {i+1}. {Path(checkpoint).name}")
+            if "global_step_" in checkpoint:
+                step_num = checkpoint.split('global_step_')[-1]
+                print(f"   {i+1}. 🟢 TRAINED MODEL - Step {step_num} ({Path(checkpoint).name})")
+            elif checkpoint == "Qwen/Qwen2.5-1.5B-Instruct":
+                print(f"   {i+1}. 🔵 BASE MODEL - {checkpoint}")
+            else:
+                print(f"   {i+1}. {Path(checkpoint).name}")
         
         while True:
             try:
