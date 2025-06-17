@@ -196,7 +196,9 @@ def compute_score(
         # Continue checking what's present for feedback, but score is capped at format_score
     else:
         final_score += 0.1  # Bonus for having all three required fields present
-        score_breakdown.append("✅ All exact required field names present (+0.1 points)")
+        score_breakdown.append(
+            "✅ All exact required field names present (+0.1 points)"
+        )
 
     # 1. objCode scoring (0.2 total points)
     if "objCode" in api_request:
@@ -220,6 +222,8 @@ def compute_score(
 
         if not model_fields and expected_fields:
             score_breakdown.append(" fields: Empty but expected content (0.0 points)")
+        elif isinstance(model_fields[0], list):
+            score_breakdown.append(" fields: Array but expected string (0.0 points)")
         elif not expected_fields:
             final_score += 0.3  # Full credit if no specific fields expected
             score_breakdown.append(" fields: No specific requirements (+0.3 points)")
