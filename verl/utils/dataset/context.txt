@@ -1,0 +1,148 @@
+Workfront API Context
+
+Core Objects:
+TASK: Represents individual tasks.
+PROJ: Represents projects.
+USER: Represents users (people in the org).
+
+## Knowledge about _Mod Operator 
+
+The _Mod operator is a suffix that can be appended to any field name in Workfront API filters to specify how that field should be compared with its value. It allows for creating complex and precise queries beyond simple equality checks.
+
+## Basic Syntax
+
+When filtering data in Workfront API, use this format:
+```
+"fieldName": "value",
+"fieldName_Mod": "operator"
+```
+
+Where:
+- `fieldName` is the name of the field to filter on
+- `value` is the value to compare against
+- `operator` is one of the supported comparison operators
+
+## Available Operators
+
+### Comparison Operators
+- `lt`: Less than (field < value)
+- `lte`: Less than or equal to (field <= value)
+- `gt`: Greater than (field > value)
+- `gte`: Greater than or equal to (field >= value)
+- `eq`: Equal to (field = value) - Default when no _Mod is specified
+- `ne`: Not equal to (field <> value or field is null)
+- `nee`: Not equal to (field <> value, null results not returned)
+
+### Text Search Operators
+- `contains`: Field contains the value (case-sensitive)
+- `cicontains`: Field contains the value (case-insensitive)
+- `startswith`: Field starts with the value (case-insensitive)
+- `notcontains`: Field does not contain the value (case-sensitive)
+- `cinotcontains`: Field does not contain the value (case-insensitive)
+
+### Date Range Operators
+- `between`: Field is between value and value_Range
+- `notbetween`: Field is not between value and value_Range
+
+### Null/Empty Checks
+- `isnull`: Field is NULL
+- `notnull`: Field is NOT NULL
+- `isblank`: Field is NULL OR field = ''
+- `notblank`: Field is NOT NULL AND field <> ''
+
+### List Operators
+- `in`: Field is in a list of values
+- `notin`: Field is not in a list of values
+
+## Date Variables
+
+Workfront supports special date variables that can be used with _Mod operators:
+
+- `$$TODAY`: Current date
+- `$$TODAYb`: Beginning of today (12:00 AM)
+- `$$TODAYe`: End of today (11:59:59 PM)
+- `$$TODAYbw`: Beginning of this week
+- `$$TODAYew`: End of this week
+- `$$TODAYbm`: Beginning of this month
+- `$$TODAYem`: End of this month
+
+You can also use offsets:
+- `$$TODAY+1d`: Tomorrow
+- `$$TODAY-1d`: Yesterday
+- `$$TODAY+1w`: One week from today
+- `$$TODAY-1w`: One week before today
+
+## Example Queries
+
+### Finding Overdue Tasks
+```json
+"filters": {
+  "actualCompletionDate_Mod": "isnull",
+  "plannedCompletionDate": "$$TODAY",
+  "plannedCompletionDate_Mod": "lt"
+}
+```
+This finds tasks that:
+- Have not been completed (actualCompletionDate is null)
+- Were due before today (plannedCompletionDate < today)
+
+### Finding Tasks Due Within a Date Range
+```json
+"filters": {
+  "actualCompletionDate_Mod": "isnull",
+  "plannedCompletionDate": "$$TODAY",
+  "plannedCompletionDate_Mod": "between",
+  "plannedCompletionDate_Range": "$$TODAY+3d"
+}
+```
+This finds tasks that:
+- Have not been completed
+- Are due between today and 3 days from now
+
+### Finding Tasks with Specific Statuses
+```json
+"filters": {
+  "status_Mod": "in",
+  "status": ["PLN", "INP"]
+}
+```
+This finds tasks that have a status of either "Planning" or "In Progress"
+
+### Finding Unassigned Tasks
+```json
+"filters": {
+  "assignedToID_Mod": "isnull"
+}
+```
+This finds tasks that have no assigned user
+
+## Best Practices
+
+1. Always use the appropriate operator for the query needs
+2. For date ranges, use the `between` operator with `_Range` parameter
+3. For null checks, use `isnull` or `notnull` operators
+4. For text searches, use case-insensitive operators (`ci` prefix) when appropriate
+5. For multiple values, use the `in` operator with an array of values
+
+## Common Use Cases
+
+1. Finding overdue items: `plannedCompletionDate_Mod: "lt", plannedCompletionDate: "$$TODAY"`
+2. Finding items due in a specific time period: `plannedCompletionDate_Mod: "between", plannedCompletionDate: "startDate", plannedCompletionDate_Range: "endDate"`
+3. Finding unassigned items: `assignedToID_Mod: "isnull"`
+4. Finding completed items: `actualCompletionDate_Mod: "notnull"`
+5. Finding items with specific text: `name_Mod: "cicontains", name: "searchTerm"`
+
+## Instructions for the LLM
+
+When users ask you to help with Workfront API queries:
+
+1. Understand their requirements and suggest appropriate _Mod operators
+2. Provide complete JSON examples of the filters they need
+3. Explain how the filters work and what they will return
+4. Suggest best practices for their specific use case
+5. If they're using date filters, recommend appropriate date variables
+6. If they need to filter on multiple values, suggest using the `in` operator
+7. If they need to check for null values, suggest using `isnull` or `notnull`
+8. If they need to search text, suggest case-insensitive operators when appropriate
+
+Remember that the _Mod operator is a powerful tool for creating precise queries in the Workfront API. Use it to help users get exactly the data they need. 

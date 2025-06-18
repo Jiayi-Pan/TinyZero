@@ -1,0 +1,662 @@
+[
+  {
+    "prompt": "List all unassigned tasks in current projects.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "TASK",
+      "fields": ["ID", "name", "assignedToID"],
+      "filters": {
+        "assignedToID_Mod": "isnull",
+        "project:status": "CUR"
+      }
+    }
+  },
+  {
+    "prompt": "Get details of all projects marked as completed last week.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "PROJ",
+      "fields": ["ID", "name", "status", "actualCompletionDate"],
+      "filters": {
+        "status": "CPL",
+        "actualCompletionDate": "$$TODAYb-1w",
+        "actualCompletionDate_Mod": "between",
+        "actualCompletionDate_Range": "$$TODAYe-1w"
+      }
+    }
+  },
+  {
+    "prompt": "Find users with role ID 7890.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "USER",
+      "fields": ["ID", "name", "roleID"],
+      "filters": {
+        "roleID": "7890"
+      }
+    }
+  },
+  {
+    "prompt": "Show tasks that are overdue and not completed.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "TASK",
+      "fields": ["ID", "name", "status", "plannedCompletionDate"],
+      "filters": {
+        "actualCompletionDate_Mod": "isnull",
+        "plannedCompletionDate": "$$TODAY",
+        "plannedCompletionDate_Mod": "lt"
+      }
+    }
+  },
+  {
+    "prompt": "List current projects owned by Sarah Parker.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "PROJ",
+      "fields": ["ID", "name", "status", "owner:name"],
+      "filters": {
+        "status": "CUR",
+        "owner:name": "Sarah Parker"
+      }
+    }
+  },
+  {
+    "prompt": "Give me all tasks due within the next 3 days.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "TASK",
+      "fields": ["ID", "name", "plannedCompletionDate"],
+      "filters": {
+        "actualCompletionDate_Mod": "isnull",
+        "plannedCompletionDate": "$$TODAY",
+        "plannedCompletionDate_Mod": "between",
+        "plannedCompletionDate_Range": "$$TODAY+3d"
+      }
+    }
+  },
+  {
+    "prompt": "Which users belong to the 'Product Team'?",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "USER",
+      "fields": ["ID", "name", "teams:name"],
+      "filters": {
+        "teams:name": "Product Team"
+      }
+    }
+  },
+  {
+    "prompt": "Show tasks that are 100% complete in canceled projects.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "TASK",
+      "fields": ["ID", "name", "percentComplete", "project:status"],
+      "filters": {
+        "percentComplete": "100",
+        "project:status": "CNL"
+      }
+    }
+  },
+  {
+    "prompt": "Fetch projects that started this month.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "PROJ",
+      "fields": ["ID", "name", "plannedStartDate"],
+      "filters": {
+        "actualCompletionDate": "$$TODAYbm",
+        "actualCompletionDate_Mod": "between",
+        "actualCompletionDate_Range": "$$TODAYem"
+      }
+    }
+  },
+  {
+    "prompt": "Give me all users who joined in the last 30 days.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "USER",
+      "fields": ["ID", "name", "entryDate"],
+      "filters": {
+        "entryDate": "$$TODAY-30d",
+        "entryDate_Mod": "between",
+        "entryDate_Range": "$$TODAY"
+      }
+    }
+  },
+  {
+    "prompt": "List incomplete tasks assigned to John Doe.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "TASK",
+      "fields": ["ID", "name", "assignedTo:name", "status"],
+      "filters": {
+        "actualCompletionDate_Mod": "isnull",
+        "assignedTo:name": "John Doe"
+      }
+    }
+  },
+  {
+    "prompt": "Find current projects where Anna Smith is the project owner.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "PROJ",
+      "fields": ["ID", "name", "owner:name", "status"],
+      "filters": {
+        "owner:name": "Anna Smith",
+        "status": "CUR"
+      }
+    }
+  },
+  {
+    "prompt": "What are all the tasks with high priority due next week?",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "TASK",
+      "fields": ["ID", "name", "priority", "plannedCompletionDate"],
+      "filters": {
+        "priority": 3,
+        "actualCompletionDate_Mod": "isnull",
+        "plannedCompletionDate": "$$TODAYb+1w",
+        "plannedCompletionDate_Mod": "between",
+        "plannedCompletionDate_Range": "$$TODAYe+1w"
+      }
+    }
+  },
+  {
+    "prompt": "Which tasks are part of project 'Website Redesign'?",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "TASK",
+      "fields": ["ID", "name", "project:name"],
+      "filters": {
+        "project:name": "Website Redesign"
+      }
+    }
+  },
+  {
+    "prompt": "Give me projects without any assigned team.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "PROJ",
+      "fields": ["ID", "name", "teamID"],
+      "filters": {
+        "teamID_Mod": "isnull"
+      }
+    }
+  },
+  {
+    "prompt": "List all tasks with 'Draft' status.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "TASK",
+      "fields": ["ID", "name", "status"],
+      "filters": {
+        "status": "DRFT"
+      }
+    }
+  },
+  {
+    "prompt": "Find users whose name includes 'Singh'.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "USER",
+      "fields": ["ID", "name"],
+      "filters": {
+        "name_Mod": "cicontains",
+        "name": "Singh"
+      }
+    }
+  },
+  {
+    "prompt": "Show projects expected to end in the next 10 days.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "PROJ",
+      "fields": ["ID", "name", "status", "plannedCompletionDate"],
+      "filters": {
+        "plannedCompletionDate": "$$TODAY",
+        "plannedCompletionDate_Mod": "between",
+        "plannedCompletionDate_Range": "$$TODAY+10d",
+        "actualCompletionDate_Mod": "isnull"
+      }
+    }
+  },
+  {
+    "prompt": "Fetch tasks that were recently updated.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "TASK",
+      "fields": ["ID", "name", "lastUpdateDate"],
+      "filters": {
+        "lastUpdateDate": "$$TODAYbw-3d",
+        "lastUpdateDate_Mod": "gte"
+      }
+    }
+  },
+  {
+    "prompt": "Show me all projects that are planned to complete at the end of next week",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "PROJ",
+      "fields": ["ID", "name", "plannedCompletionDate"],
+      "filters": {
+        "plannedCompletionDate": "$$TODAYe+1w",
+        "actualCompletionDate_Mod": "isnull"
+      }
+    }
+  },
+  {
+    "prompt": "Show me all projects that are planned to complete at the end of this week",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "PROJ",
+      "fields": ["ID", "name", "plannedCompletionDate"],
+      "filters": {
+        "plannedCompletionDate": "$$TODAYew",
+        "actualCompletionDate_Mod": "isnull"
+      }
+    }
+  },
+  {
+    "prompt": "Show me all projects that are planned to complete today or earlier",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "PROJ",
+      "fields": ["ID", "name", "plannedCompletionDate"],
+      "filters": {
+        "plannedCompletionDate": "$$TODAY",
+        "plannedCompletionDate_Mod": "lte",
+        "actualCompletionDate_Mod": "isnull"
+      }
+    }
+  },
+  {
+    "prompt": "Show me all projects that are planned to complete by the end of this week",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "PROJ",
+      "fields": ["ID", "name", "plannedCompletionDate"],
+      "filters": {
+        "plannedCompletionDate": "$$TODAYew",
+        "plannedCompletionDate_Mod": "lte",
+        "actualCompletionDate_Mod": "isnull"
+      }
+    }
+  },
+  {
+    "prompt": "Show me all projects that are planned to complete after tomorrow",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "PROJ",
+      "fields": ["ID", "name", "plannedCompletionDate"],
+      "filters": {
+        "plannedCompletionDate": "$$TODAY+1",
+        "plannedCompletionDate_Mod": "gt",
+        "actualCompletionDate_Mod": "isnull"
+      }
+    }
+  },
+  {
+    "prompt": "Show me all projects that are planned to complete at the end of next week",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "PROJ",
+      "fields": ["ID", "name", "plannedCompletionDate"],
+      "filters": {
+        "plannedCompletionDate": "$$TODAYe+1w",
+        "actualCompletionDate_Mod": "isnull"
+      }
+    }
+  },
+  {
+    "prompt": "Show me all projects that are planned to complete after the end of next week",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "PROJ",
+      "fields": ["ID", "name", "plannedCompletionDate"],
+      "filters": {
+        "plannedCompletionDate": "$$TODAYe+1w",
+        "plannedCompletionDate_Mod": "gt",
+        "actualCompletionDate_Mod": "isnull"
+      }
+    }
+  },
+  {
+    "prompt": "Show me all projects that are planned to complete after the end of next week",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "PROJ",
+      "fields": ["ID", "name", "plannedCompletionDate"],
+      "filters": {
+        "plannedCompletionDate": "$$TODAYe+1w",
+        "plannedCompletionDate_Mod": "gt",
+        "actualCompletionDate_Mod": "isnull"
+      }
+    }
+  },
+  {
+    "prompt": "Show me all projects that are planned to complete on or after the end of next week",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "PROJ",
+      "fields": ["ID", "name", "plannedCompletionDate"],
+      "filters": {
+        "plannedCompletionDate": "$$TODAYe+1w",
+        "plannedCompletionDate_Mod": "gte",
+        "actualCompletionDate_Mod": "isnull"
+      }
+    }
+  },
+  {
+    "prompt": "Show me all projects that are planned to complete before the beginning of this week",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "PROJ",
+      "fields": ["ID", "name", "plannedCompletionDate"],
+      "filters": {
+        "plannedCompletionDate": "$$TODAYbw",
+        "plannedCompletionDate_Mod": "lt",
+        "actualCompletionDate_Mod": "isnull"
+      }
+    }
+  },
+  {
+    "prompt": "Show me all projects that are planned to complete at the end of next week",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "PROJ",
+      "fields": ["ID", "name", "plannedCompletionDate"],
+      "filters": {
+        "plannedCompletionDate": "$$TODAYe+1w",
+        "actualCompletionDate_Mod": "isnull"
+      }
+    }
+  },
+  {
+    "prompt": "Show me all projects that are planned to complete after the beginning of next week",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "PROJ",
+      "fields": ["ID", "name", "plannedCompletionDate"],
+      "filters": {
+        "plannedCompletionDate": "$$TODAYb+1w",
+        "plannedCompletionDate_Mod": "gt",
+        "actualCompletionDate_Mod": "isnull"
+      }
+    }
+  },
+  {
+    "prompt": "Show me all projects that are planned to complete between today and the end of next week",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "PROJ",
+      "fields": ["ID", "name", "plannedCompletionDate"],
+      "filters": {
+        "plannedCompletionDate": "$$TODAYe+1w",
+        "plannedCompletionDate_Mod": "between",
+        "plannedCompletionDate_Range": "$$TODAY",
+        "actualCompletionDate_Mod": "isnull"
+      }
+    }
+  },
+  {
+    "prompt": "Show me all projects that are planned to complete after the beginning of next week",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "PROJ",
+      "fields": ["ID", "name", "plannedCompletionDate"],
+      "filters": {
+        "plannedCompletionDate": "$$TODAYb+1w",
+        "plannedCompletionDate_Mod": "gt",
+        "actualCompletionDate_Mod": "isnull"
+      }
+    }
+  },
+  {
+    "prompt": "Show me all projects that are planned to complete on or after tomorrow",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "PROJ",
+      "fields": ["ID", "name", "plannedCompletionDate"],
+      "filters": {
+        "plannedCompletionDate": "$$TODAY+1",
+        "plannedCompletionDate_Mod": "gte",
+        "actualCompletionDate_Mod": "isnull"
+      }
+    }
+  },
+  {
+    "prompt": "Show me all projects that are planned to complete by tomorrow",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "PROJ",
+      "fields": ["ID", "name", "plannedCompletionDate"],
+      "filters": {
+        "plannedCompletionDate": "$$TODAY+1",
+        "plannedCompletionDate_Mod": "lte",
+        "actualCompletionDate_Mod": "isnull"
+      }
+    }
+  },
+  {
+    "prompt": "Show me all projects that are planned to complete on or after the end of next week",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "PROJ",
+      "fields": ["ID", "name", "plannedCompletionDate"],
+      "filters": {
+        "plannedCompletionDate": "$$TODAYe+1w",
+        "plannedCompletionDate_Mod": "gte",
+        "actualCompletionDate_Mod": "isnull"
+      }
+    }
+  },
+  {
+    "prompt": "Show me all projects that are planned to complete this week",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "PROJ",
+      "fields": ["ID", "name", "plannedCompletionDate"],
+      "filters": {
+        "plannedCompletionDate": "$$TODAYbw",
+        "plannedCompletionDate_Mod": "between",
+        "plannedCompletionDate_Range": "$$TODAYew",
+        "actualCompletionDate_Mod": "isnull"
+      }
+    }
+  },
+  {
+    "prompt": "Show me all projects that are planned to complete today",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "PROJ",
+      "fields": ["ID", "name", "plannedCompletionDate"],
+      "filters": {
+        "plannedCompletionDate": "$$TODAY",
+        "actualCompletionDate_Mod": "isnull"
+      }
+    }
+  },
+  {
+    "prompt": "Show me all projects that are planned to complete after today",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "PROJ",
+      "fields": ["ID", "name", "plannedCompletionDate"],
+      "filters": {
+        "plannedCompletionDate": "$$TODAY",
+        "plannedCompletionDate_Mod": "gt",
+        "actualCompletionDate_Mod": "isnull"
+      }
+    }
+  },
+  {
+    "prompt": "List all tasks assigned by user ID 8765.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "TASK",
+      "fields": ["ID", "name"],
+      "filters": {
+        "assignments:assignedByID": "8765"
+      }
+    }
+  },
+  {
+    "prompt": "Get all tasks in project ID PROJ4321 that are still in progress.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "TASK",
+      "fields": ["ID", "name"],
+      "filters": {
+        "projectID": "PROJ4321",
+        "status": "INP"
+      }
+    }
+  },
+  {
+    "prompt": "Get all projects that started in the last 15 days and are not completed.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "PROJ",
+      "fields": ["ID", "name", "status", "actualStartDate"],
+      "filters": {
+        "actualStartDate": "$$TODAY",
+        "actualStartDate_Mod": "between",
+        "actualStartDate_Range": "$$TODAY-15d",
+        "status_Mod": "ne",
+        "status": "CPL"
+      }
+    }
+  },
+  {
+    "prompt": "List all overdue tasks assigned to user ID 2201.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "TASK",
+      "fields": ["ID", "name", "plannedCompletionDate", "assignments:assignedToID"],
+      "filters": {
+        "assignments:assignedToID": "2201",
+        "actualCompletionDate_Mod": "isnull",
+        "plannedStartDate": "$$TODAY",
+        "plannedStartDate_Mod": "lt"
+      }
+    }
+  },
+  {
+    "prompt": "Fetch tasks that were due yesterday and assigned to user ID 9988.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "TASK",
+      "fields": ["ID", "name", "plannedCompletionDate", "assignments:assignedToID"],
+      "filters": {
+        "plannedCompletionDate": "$$TODAYb-1d",
+        "plannedCompletionDate_Mod": "between",
+        "plannedCompletionDate_Range": "$$TODAYe-1d",
+        "assignments:assignedToID": "9988"
+      }
+    }
+  },
+  {
+    "prompt": "List all tasks with status 'Planning' or 'In Progress'.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "TASK",
+      "fields": ["ID", "name", "status"],
+      "filters": {
+        "status_Mod": "in",
+        "status": ["PLN", "INP"]
+      }
+    }
+  },
+  {
+    "prompt": "Show all projects owned by user ID 901.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "PROJ",
+      "fields": ["ID", "name", "ownerID"],
+      "filters": {
+        "ownerID": "901"
+      }
+    }
+  },
+  {
+    "prompt": "List tasks started this week and not assigned yet.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "TASK",
+      "fields": ["ID", "name", "plannedStartDate", "assignedToID"],
+      "filters": {
+        "plannedStartDate": "$$TODAYb-1w",
+        "plannedStartDate_Mod": "between",
+        "plannedStartDate_Range": "$$TODAYe-1w",
+        "assignedToID_Mod": "isnull"
+      }
+    }
+  },
+  {
+    "prompt": "Give me tasks created by user ID 4001 and assigned to someone else.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "TASK",
+      "fields": ["ID", "name", "enteredByID", "assignments:assignedToID"],
+      "filters": {
+        "enteredByID": "4001",
+        "assignments:assignedToID_Mod": "ne",
+        "assignments:assignedToID": "4001"
+      }
+    }
+  },
+  {
+    "prompt": "Find all current tasks under projects created this month.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "TASK",
+      "fields": ["ID", "name", "project:entryDate"],
+      "filters": {
+        "status": "CUR",
+        "project:entryDate": "$$TODAYbm",
+        "project:entryDate_Mod": "between",
+        "project:entryDate_Range": "$$TODAYem"
+      }
+    }
+  },
+  {
+    "prompt": "List all tasks that have no assigned user and are not completed.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "TASK",
+      "fields": ["ID", "name", "assignments:assignedToID", "status"],
+      "filters": {
+        "assignments:assignedToID_Mod": "isnull",
+        "actualCompletionDate_Mod": "isnull"
+      }
+    }
+  },
+  {
+    "prompt": "Get tasks that are  high priority and created this week.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "TASK",
+      "fields": ["ID", "name", "priority", "entryDate"],
+      "filters": {
+        "priority": 3,
+        "entryDate": "$$TODAYbw",
+        "entryDate_Mod": "between",
+        "entryDate_Range": "$$TODAYew"
+      }
+    }
+  },
+  {
+    "prompt": "Find tasks created and assigned by user ID 1122.",
+    "expected_response": {
+      "tool": "fetch_data",
+      "objCode": "TASK",
+      "fields": ["ID", "name", "assignments:assignedByID"],
+      "filters": {
+        "enteredByID": "1122",
+        "assignments:assignedByID": "1122"
+      }
+    }
+  }
+]

@@ -1,0 +1,45 @@
+--- PROJECT METADATA ---
+domain_knowledge:|
+  Projects represent the main container of work that is to be completed. A Project may contain many different tasks or issues. Projects have both a plannedCompletionDate 
+  which represents an estimate or planned completion date, and also a actualCompletionDate which represents the actual completion date of the project. If you are looking
+  for when things actually completed use the actualCompletionDate, if you are wanting to know when something is planned to be completed use the plannedCompletionDate.
+  Default Statuses include: Current, Dead, On Hold, Planning, Complete, Requested, Approved, Rejected, and Idea
+
+  OBJECT: PROJECT   (objCode = PROJ)
+
+Fields:
+- ID (string)
+- name (string)
+- status (string; CUR = Current, PLN = Planning, CPL = Complete, ONH = On Hold, DED = Dead, REQ = Requested, APR = Approved, REJ = Rejected, IDA = Idea)
+- priority (int; 0=None, 1=Low, 2=Normal, 3=High, 4=Urgent)
+- plannedStartDate (dateTime)
+- plannedCompletionDate (dateTime)
+- actualStartDate (dateTime)
+- actualCompletionDate (dateTime)
+- lastUpdateDate (dateTime)
+- percentComplete (double)
+- ownerID (string)
+- teamID (string)
+- entryDate (dateTime)
+
+Reference / Composite Fields:
+- owner:name (string)          ← from USER
+- team:name  (string)          ← from TEAM
+- portfolio:name / program:name (string)  ← optional filters
+- tasks (reverse collection)   ← TASK objects with projectID = this project
+
+Relationships:
+- owner      → USER
+- team       → TEAM
+- tasks      → TASK (via projectID)
+
+Common Filter Operators:
+- _Mod: "isnull"              → check for empty fields (e.g. teamID_Mod=isnull)
+- _Mod: "between" + _Range    → date ranges (plannedCompletionDate_Mod=between, plannedCompletionDate=$$TODAY, plannedCompletionDate_Range=$$TODAY+10d)
+- _Mod: "eq" | "lt" | "lte" | "gt" | "gte" → numeric / date comparisons
+- _Mod: "cicontains"          → case-insensitive substring match for text fields (e.g. name_Mod=cicontains, name=Redesign)
+
+
+Use this metadata to select fields and create accurate filters in your JSON responses.
+
+
