@@ -216,13 +216,16 @@ def compute_score(
     # 2. fields scoring (0.3 total points)
     if "fields" in api_request:
         model_fields = api_request.get("fields", [])
+        first_item = None
+        if model_fields:
+            first_item = model_fields[0]
         if model_fields is not None:
             model_fields = set(model_fields)
         expected_fields = set(expected_response.get("fields", []))
 
         if not model_fields and expected_fields:
             score_breakdown.append(" fields: Empty but expected content (0.0 points)")
-        elif isinstance(model_fields[0], list):
+        elif first_item and isinstance(first_item, list):
             score_breakdown.append(" fields: Array but expected string (0.0 points)")
         elif not expected_fields:
             final_score += 0.3  # Full credit if no specific fields expected
