@@ -222,7 +222,15 @@ Let me solve this step by step.
     def extract_text_after_thinking(self, solution_str):
         # Extract all text after the <thinking> tag
         thinking_start = solution_str.find("<thinking>")
-        position_to_slice = thinking_start
+        if thinking_start != -1:
+            # Find the second instance by searching from after the first one
+            second_thinking_start = solution_str.find("<thinking>", thinking_start + 1)
+            if second_thinking_start != -1:
+                position_to_slice = second_thinking_start
+            else:
+                position_to_slice = thinking_start
+        else:
+            position_to_slice = 0
         return solution_str[position_to_slice:].strip()
 
     def generate_response(self, prompt):
