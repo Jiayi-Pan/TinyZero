@@ -363,12 +363,12 @@ Let me solve this step by step.
         print(f"⚡ Generated in {response_time:.2f} seconds")
 
         if show_thinking and "<thinking>" in response:
-            thinking_start = response.find("<thinking>")
-            thinking_end = response.find("</thinking>")
-            if thinking_start != -1 and thinking_end != -1:
-                thinking = response[thinking_start + 10 : thinking_end].strip()
-                print(f"\n🧠 AI THINKING:")
-                print(f"   {thinking}")
+            # thinking_start = response.find("<thinking>")
+            # thinking_end = response.find("</thinking>")
+            # if thinking_start != -1 and thinking_end != -1:
+            #     thinking = response[thinking_start + 10 : thinking_end].strip()
+            print(f"\n🧠 AI THINKING:")
+            print(f"   {response}")
 
         # Extract and display JSON
         json_result = self.extract_json_v2(response)
