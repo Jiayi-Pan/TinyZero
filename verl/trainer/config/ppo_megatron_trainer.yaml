@@ -128,6 +128,7 @@ algorithm:
   gamma: 1.0
   lam: 1.0
   adv_estimator: gae
+  norm_adv_by_std_in_grpo: True  # whether to normalize advantage by std in grpo
   kl_penalty: kl  # how to estimate kl divergence
   kl_ctrl:
     type: fixed

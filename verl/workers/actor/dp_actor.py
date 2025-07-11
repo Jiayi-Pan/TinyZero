@@ -30,6 +30,7 @@ from verl.utils.torch_functional import logprobs_from_logits, masked_mean
 from verl.utils.ulysses import ulysses_pad_and_slice_inputs, gather_outpus_and_unpad
 from verl.utils.seqlen_balancing import rearrange_micro_batches, get_reverse_idx
 import verl.utils.torch_functional as verl_F
+from verl.trainer.ppo.core_algos import agg_loss
 
 from flash_attn.bert_padding import pad_input, unpad_input, rearrange, index_first_axis
 
@@ -241,20 +242,39 @@ class DataParallelPPOActor(BasePPOActor):
 
                 clip_ratio = self.config.clip_ratio
                 entropy_coeff = self.config.entropy_coeff
+                loss_agg_mode = self.config.loss_agg_mode
+                
 
                 # all return: (bsz, response_length)
                 entropy, log_prob = self._forward_micro_batch(micro_batch=data, temperature=temperature)
 
-                pg_loss, pg_clipfrac, ppo_kl = core_algos.compute_policy_loss(old_log_prob=old_log_prob,
-                                                                              log_prob=log_prob,
-                                                                              advantages=advantages,
-                                                                              eos_mask=response_mask,
-                                                                              cliprange=clip_ratio)
+                ## 更改的部分
+                pg_loss, pg_clipfrac, ppo_kl, pg_clipfrac_lower = core_algos.compute_policy_loss(
+                            old_log_prob=old_log_prob,
+                            log_prob=log_prob,
+                            advantages=advantages,
+                            # eos_mask=response_mask,
+                            response_mask=response_mask,
+                            cliprange=clip_ratio,
+                            loss_agg_mode=loss_agg_mode,
+                        )
                 # compute entropy loss from entropy
-                entropy_loss = verl_F.masked_mean(entropy, response_mask)
+                
+                ## 更改的部分
+                # entropy_loss = verl_F.masked_mean(entropy, response_mask)
 
-                # compute policy loss
-                policy_loss = pg_loss - entropy_loss * entropy_coeff
+                # # compute policy loss
+                # policy_loss = pg_loss - entropy_loss * entropy_coeff
+
+
+                if entropy_coeff != 0:
+                    entropy_loss = agg_loss(loss_mat=entropy, loss_mask=response_mask, loss_agg_mode=loss_agg_mode)
+
+                    # compute policy loss
+                    policy_loss = pg_loss - entropy_loss * entropy_coeff
+                else:
+                    policy_loss = pg_loss
+
 
                 if self.config.use_kl_loss:
                     ref_log_prob = data['ref_log_prob']
@@ -262,7 +282,8 @@ class DataParallelPPOActor(BasePPOActor):
                     kld = core_algos.kl_penalty(logprob=log_prob,
                                                 ref_logprob=ref_log_prob,
                                                 kl_penalty=self.config.kl_loss_type)
-                    kl_loss = masked_mean(kld, response_mask)
+                    kl_loss = agg_loss(loss_mat=kld, loss_mask=response_mask, loss_agg_mode=loss_agg_mode)
+                    # kl_loss = masked_mean(kld, response_mask)
 
                     policy_loss = policy_loss - kl_loss * self.config.kl_loss_coef
                     metrics['actor/kl_loss'] = kl_loss.detach().item()
@@ -276,6 +297,7 @@ class DataParallelPPOActor(BasePPOActor):
                     'actor/pg_loss': pg_loss.detach().item(),
                     'actor/pg_clipfrac': pg_clipfrac.detach().item(),
                     'actor/ppo_kl': ppo_kl.detach().item(),
+                    "actor/pg_clipfrac_lower": pg_clipfrac_lower.detach().item(),
                 }
                 append_to_dict(metrics, data)
 

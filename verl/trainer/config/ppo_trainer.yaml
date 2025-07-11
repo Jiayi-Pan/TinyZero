@@ -30,6 +30,7 @@ actor_rollout_ref:
     use_kl_loss: False # True for GRPO
     kl_loss_coef: 0.001 # for grpo
     kl_loss_type: low_var_kl # for grpo
+    loss_agg_mode: token-mean # token-mean for grpo, seq-mean-token-sum-norm for dr-grpo
     ppo_epochs: 1
     shuffle: False
     ulysses_sequence_parallel_size: 1 # sp size
@@ -139,6 +140,7 @@ algorithm:
   gamma: 1.0
   lam: 1.0
   adv_estimator: gae
+  norm_adv_by_std_in_grpo: True  # whether to normalize advantage by std in grpo
   kl_penalty: kl  # how to estimate kl divergence
   kl_ctrl:
     type: fixed

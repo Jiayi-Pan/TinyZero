@@ -22,7 +22,7 @@ from typing import List, Union, Dict, Any
 
 
 class Tracking(object):
-    supported_backend = ['wandb', 'mlflow', 'console']
+    supported_backend = ['wandb', 'mlflow', 'console', 'swanlab']
 
     def __init__(self, project_name, experiment_name, default_backend: Union[str, List[str]] = 'console', config=None):
         if isinstance(default_backend, str):
@@ -45,6 +45,15 @@ class Tracking(object):
             wandb.init(project=project_name, name=experiment_name, config=config)
             self.logger['wandb'] = wandb
 
+        if 'swanlab' in default_backend:
+            import swanlab
+            import os
+            SWANLAB_API_KEY = os.environ.get("SWANLAB_API_KEY", None)
+            if SWANLAB_API_KEY:
+                swanlab.login(api_key=SWANLAB_API_KEY)
+            swanlab.init(project=project_name, name=experiment_name, config=config)
+            self.logger['wandb'] = swanlab
+
         if 'mlflow' in default_backend:
             import mlflow
             mlflow.start_run(run_name=experiment_name)
@@ -60,6 +69,7 @@ class Tracking(object):
         for default_backend, logger_instance in self.logger.items():
             if backend is None or default_backend in backend:
                 logger_instance.log(data=data, step=step)
+
 
 
 class _MlflowLoggingAdapter:

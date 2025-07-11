@@ -23,6 +23,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from pprint import pprint
 from typing import Type, Dict
+from typing import Optional, Type
 
 import numpy as np
 from codetiming import Timer
@@ -113,7 +114,16 @@ def apply_kl_penalty(data: DataProto, kl_ctrl: core_algos.AdaptiveKLController, 
     return data, metrics
 
 
-def compute_advantage(data: DataProto, adv_estimator, gamma=1.0, lam=1.0, num_repeat=1):
+## 更改过后的原来的compute_advantage函数 (verl_v02)
+def compute_advantage(
+    data: DataProto, 
+    adv_estimator, 
+    gamma=1.0, 
+    lam=1.0, 
+    num_repeat=1,
+    norm_adv_by_std_in_grpo=True,
+    config = None # currently not used, but can be used to pass additional config
+    ):
     # prepare response group
     # TODO: add other ways to estimate advantages
     if adv_estimator == 'gae':
@@ -137,9 +147,12 @@ def compute_advantage(data: DataProto, adv_estimator, gamma=1.0, lam=1.0, num_re
         response_length = responses.size(-1)
         attention_mask = data.batch['attention_mask']
         response_mask = attention_mask[:, -response_length:]
-        advantages, returns = core_algos.compute_grpo_outcome_advantage(token_level_rewards=token_level_rewards,
-                                                                        eos_mask=response_mask,
-                                                                        index=index)
+        advantages, returns = core_algos.compute_grpo_outcome_advantage(
+                                token_level_rewards=token_level_rewards,
+                                eos_mask=response_mask,
+                                index=index,
+                                norm_adv_by_std_in_grpo = norm_adv_by_std_in_grpo
+                                )
         data.batch['advantages'] = advantages
         data.batch['returns'] = returns
     else:
@@ -637,12 +650,27 @@ class RayPPOTrainer(object):
                             batch.batch['token_level_rewards'] = batch.batch['token_level_scores']
 
                         # compute advantages, executed on the driver process
-                        batch = compute_advantage(batch,
-                                                  adv_estimator=self.config.algorithm.adv_estimator,
-                                                  gamma=self.config.algorithm.gamma,
-                                                  lam=self.config.algorithm.lam,
-                                                  num_repeat=self.config.actor_rollout_ref.rollout.n)
+                        # batch = compute_advantage(batch,
+                        #     adv_estimator=self.config.algorithm.adv_estimator,
+                        #     gamma=self.config.algorithm.gamma,
+                        #     lam=self.config.algorithm.lam,
+                        #     num_repeat=self.config.actor_rollout_ref.rollout.n,
+                        # )
 
+                        ### 更改的地方
+                        norm_adv_by_std_in_grpo = self.config.algorithm.get(
+                            "norm_adv_by_std_in_grpo", True
+                        )  # GRPO adv normalization factor
+
+                        batch = compute_advantage(
+                            batch,
+                            adv_estimator=self.config.algorithm.adv_estimator,
+                            gamma=self.config.algorithm.gamma,
+                            lam=self.config.algorithm.lam,
+                            num_repeat=self.config.actor_rollout_ref.rollout.n,
+                            norm_adv_by_std_in_grpo=norm_adv_by_std_in_grpo,
+                            config=self.config.algorithm,
+                        )
                     # update critic
                     if self.use_critic:
                         with _timer('update_critic', timing_raw):
