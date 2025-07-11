@@ -1,4 +1,5 @@
 # TinyZero
+
 ![image](cover.png)
 
 TinyZero is a reproduction of [DeepSeek R1 Zero](https://github.com/deepseek-ai/DeepSeek-R1) in countdown and multiplication tasks. We built upon [veRL](https://github.com/volcengine/verl).
@@ -11,12 +12,12 @@ Twitter thread: https://x.com/jiayi_pirate/status/1882839370505621655
 
 Full experiment log: https://wandb.ai/jiayipan/TinyZero
 
-Paper's on it's way!
+> 📢: We release [Apative Parallel Reasoning](https://github.com/Parallel-Reasoning/APR), where we explore a new dimension in scaling reasoining models
 
 ## Installation
 
 ```
-conda create -n zero python=3.9
+conda create -n zero python=3.10.18
 # install torch [or you can skip this step and let vllm to install the correct version for you]
 pip install torch==2.4.0 --index-url https://download.pytorch.org/whl/cu121
 # install vllm
