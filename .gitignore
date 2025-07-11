@@ -14,7 +14,8 @@
 **/verl_v03
 **/verl_v04
 **/nohupoutput
-**/train_tiny_zero_a100_drgrpo_tang3.sh
+**/train_3b_drgrpo_song2.sh
+**/train_3b_drgrpo_song2.sh
 **/train_tiny_zero_a100_drgrpo_song2.sh
 
 # Byte-compiled / optimized / DLL files
