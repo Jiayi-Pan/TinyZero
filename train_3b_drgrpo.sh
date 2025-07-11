@@ -10,5 +10,5 @@ export VLLM_ATTENTION_BACKEND=XFORMERS
 
 export SWANLAB_API_KEY=YOUR_API_KEY_HERE
 
-# bash ./scripts/train_tiny_zero_a100_drgrpo_tang3.sh
-nohup bash ./scripts/train_tiny_zero_a100_drgrpo_tang3.sh &>./nohupoutput
+# bash ./scripts/train_tiny_zero_a100_drgrpo.sh
+nohup bash ./scripts/train_tiny_zero_a100_drgrpo.sh &>./nohupoutput
