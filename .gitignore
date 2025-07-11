@@ -8,6 +8,13 @@
 **/playground
 **/wandb
 
+# my custom ignore
+**/swanlog
+**/verl_original
+**/verl_v03
+**/verl_v04
+**/nohupoutput
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -111,3 +118,9 @@ tests/e2e/toy_examples/deepspeed/synchronous/output.txt
 
 # vim
 *.swp
+
+# large data
+*.parquet
+
+# model
+model/

@@ -1,0 +1,62 @@
+import re
+import random
+import ast
+import operator
+
+def extract_solution(solution_str):
+    """Extract the equation from the solution string."""
+    # Remove everything before the first "Assistant:"
+    if "Assistant:" in solution_str:
+        solution_str = solution_str.split("Assistant:", 1)[1]
+    elif "<|im_start|>assistant" in solution_str:
+        solution_str = solution_str.split("<|im_start|>assistant", 1)[1]
+    else:
+        return None
+    solution_str = solution_str.split('\n')[-1]
+
+    answer_pattern = r'<answer>(.*?)</answer>'
+    match = re.finditer(answer_pattern, solution_str)
+    matches = list(match)
+    if matches:
+        final_answer = matches[-1].group(1).strip()
+    else:
+        final_answer = None
+    return final_answer
+
+
+def evaluate_equation(equation_str):
+    """Safely evaluate the arithmetic equation using eval() with precautions."""
+    try:
+        # Define a regex pattern that only allows numbers, operators, parentheses, and whitespace
+        allowed_pattern = r'^[\d+\-*/().\s]+$'
+        if not re.match(allowed_pattern, equation_str):
+            raise ValueError("Invalid characters in equation.")
+
+        # Evaluate the equation with restricted globals and locals
+        result = eval(equation_str, {"__builtins__": None}, {})
+        return result
+    except Exception as e:
+        return None
+
+def validate_output_format(solution_str):
+    """Validate the output format of the solution string."""
+    # should contain only one <think> </think>, <answer> </answer>
+    think_count = solution_str.count('<think>')
+    end_think_count = solution_str.count('</think>')
+    answer_count = solution_str.count('<answer>')
+    end_answer_count = solution_str.count('</answer>')
+    if think_count != end_think_count:
+        return False
+    if answer_count != end_answer_count:
+        return False
+    if think_count > 1 or answer_count > 1:
+        return False
+
+## debug
+solution = """
+Assistant: Let me solve this step by step.
+<think> We need to get from the numbers 70, 8, and 11 to the number 73. By subtracting 11 from 70 we get 59, and adding 8 to that gives us 67, but that's too low. Instead, we should try subtracting 8 from 70 first, which gives us 62, and then adding 11 results in 73. So the correct equation is 70 - 8 + 11. </think>
+<answer> (70 - 8) + 11 </answer><|endoftext|>
+"""
+print(extract_solution(solution))  # Should return "(91 - 43) - 3"
+print(validate_output_format(solution))  # Should return True

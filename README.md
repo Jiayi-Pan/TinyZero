@@ -1,5 +1,4 @@
 # TinyZero
-
 ![image](cover.png)
 
 TinyZero is a reproduction of [DeepSeek R1 Zero](https://github.com/deepseek-ai/DeepSeek-R1) in countdown and multiplication tasks. We built upon [veRL](https://github.com/volcengine/verl).
@@ -12,7 +11,7 @@ Twitter thread: https://x.com/jiayi_pirate/status/1882839370505621655
 
 Full experiment log: https://wandb.ai/jiayipan/TinyZero
 
-> 📢: We release [Apative Parallel Reasoning](https://github.com/Parallel-Reasoning/APR), where we explore a new dimension in scaling reasoining models
+Paper's on it's way!
 
 ## Installation
 
