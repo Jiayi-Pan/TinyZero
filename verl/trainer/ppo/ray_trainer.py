@@ -560,12 +560,15 @@ class RayPPOTrainer(object):
         return rep 
     
     def _apply_hindsight_relabeling(self, batch: DataProto):
-        from verl.utils.reward_score.countdown import extract_solution, validate_equation, evaluate_equation, compute_score
+        from verl.utils.reward_score.countdown import extract_solution, validate_equation, evaluate_equation
+        import jax
 
         for i in range(len(batch)):
             if batch.non_tensor_batch['data_source'][i] != 'countdown' or random.random() > self.relabel_fraction:
                 continue
 
+            input_ids = batch.batch['input_ids'][i]
+            position_ids = batch.batch['position_ids'][i]
             response_ids = batch.batch['responses'][i]
             prompt_ids = batch.batch['prompts'][i]
             attention_mask = batch.batch['attention_mask'][i]
@@ -596,11 +599,10 @@ class RayPPOTrainer(object):
             except:
                 continue 
 
-            # print("Old target: " + str(batch.non_tensor_batch['reward_model'][i]['ground_truth']["target"]))
-            # print("Prediction: " + str(prediction))
-            batch.non_tensor_batch['reward_model'][i]['ground_truth']["target"] = prediction
+            # batch.non_tensor_batch['reward_model'][i]['ground_truth']["target"] = prediction
             orig_prompt = self.tokenizer.decode(prompt_ids)
-            relabeled_prompt = self._relabel_prompt(orig_prompt, prediction)
+            # relabeled_prompt = self._relabel_prompt(orig_prompt, prediction)
+            relabeled_prompt = orig_prompt
 
             new_prompt_ids, new_attention_mask = verl_F.tokenize_and_postprocess_data(prompt=relabeled_prompt,
                                                                             tokenizer=self.tokenizer,
@@ -610,51 +612,20 @@ class RayPPOTrainer(object):
                                                                             truncation=self.config.get('truncation', 'left'))
             new_position_ids = compute_position_id_with_mask(new_attention_mask)
 
-            # print("Old prompt ids:")
-            # print(prompt_ids)
-            # print("Old prompt:")
-            # print(self.tokenizer.decode(prompt_ids))
-            # print()
-
-            # print("New prompt ids:")
-            # print(new_prompt_ids)
-            # print("New prompt:")
-            # print(self.tokenizer.decode(new_prompt_ids[0]))
-            # print()
-            # print() 
-
             batch.batch['input_ids'][i] = torch.cat([new_prompt_ids[0], response_ids], dim=-1)
             batch.batch['prompts'][i] = new_prompt_ids[0]
             batch.batch['attention_mask'][i] = torch.cat((new_attention_mask[0], response_attention_mask), dim=-1)
             batch.batch['position_ids'][i] = torch.cat([new_position_ids[0], response_position_ids], dim=-1)
 
+            input_id_all_equal = jax.tree_util.tree_all(jax.tree_util.tree_map(lambda a, b: a == b, input_ids, batch.batch['input_ids'][i]))
+            prompt_all_equal = jax.tree_util.tree_all(jax.tree_util.tree_map(lambda a, b: a == b, prompt_ids, batch.batch['prompts'][i]))
+            attention_all_equal = jax.tree_util.tree_all(jax.tree_util.tree_map(lambda a, b: a == b, attention_mask, batch.batch['attention_mask'][i]))
+            position_id_all_equal = jax.tree_util.tree_all(jax.tree_util.tree_map(lambda a, b: a == b, position_ids, batch.batch['position_ids'][i]))
 
-            ### To REMOVE
-            # response_ids = batch.batch['responses'][i]
-            # prompt_ids = batch.batch['prompts'][i]
-            # attention_mask = batch.batch['attention_mask'][i]
-            # response_attention_mask = batch.batch['response_attention_mask'][i]
-            # response_position_ids = batch.batch['response_position_ids'][i]
-
-            # prompt_len = prompt_ids.shape[-1]
-            # valid_prompt_len = attention_mask[:prompt_len].sum()
-            # valid_prompt_ids = prompt_ids[-valid_prompt_len:]
-
-            # valid_response_len = attention_mask[prompt_len:].sum()
-            # valid_response_ids = response_ids[:valid_response_len]
-
-            # sequences = torch.cat((valid_prompt_ids, valid_response_ids))
-            # sequences_str = self.tokenizer.decode(sequences)
-
-            # ground_truth = batch.non_tensor_batch['reward_model'][i]['ground_truth']
-            # data_source = batch.non_tensor_batch['data_source'][i]
-            # assert data_source == "countdown"
-
-            # score = compute_score(solution_str=sequences_str, ground_truth=ground_truth, format_score=0.)
-            # print("SCORE:")
-            # print(score)
-            ### To Remove
-
+            assert input_id_all_equal, "Input ids are not equivalent"
+            assert prompt_all_equal, "Prompt ids are not equivalent"
+            assert attention_all_equal, "Attention masks are not equivalent"
+            assert position_id_all_equal, "Position ids are not equivalent" 
 
         del batch.batch['response_attention_mask']
         del batch.batch['response_position_ids']
