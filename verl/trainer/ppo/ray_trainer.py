@@ -562,6 +562,7 @@ class RayPPOTrainer(object):
     def _apply_hindsight_relabeling(self, batch: DataProto):
         from verl.utils.reward_score.countdown import extract_solution, validate_equation, evaluate_equation
         import jax
+        import jax.numpy as jnp
 
         for i in range(len(batch)):
             if batch.non_tensor_batch['data_source'][i] != 'countdown' or random.random() > self.relabel_fraction:
@@ -617,10 +618,10 @@ class RayPPOTrainer(object):
             batch.batch['attention_mask'][i] = torch.cat((new_attention_mask[0], response_attention_mask), dim=-1)
             batch.batch['position_ids'][i] = torch.cat([new_position_ids[0], response_position_ids], dim=-1)
 
-            input_id_all_equal = jax.tree_util.tree_all(jax.tree_util.tree_map(lambda a, b: a == b, input_ids, batch.batch['input_ids'][i]))
-            prompt_all_equal = jax.tree_util.tree_all(jax.tree_util.tree_map(lambda a, b: a == b, prompt_ids, batch.batch['prompts'][i]))
-            attention_all_equal = jax.tree_util.tree_all(jax.tree_util.tree_map(lambda a, b: a == b, attention_mask, batch.batch['attention_mask'][i]))
-            position_id_all_equal = jax.tree_util.tree_all(jax.tree_util.tree_map(lambda a, b: a == b, position_ids, batch.batch['position_ids'][i]))
+            input_id_all_equal = jax.tree_util.tree_all(jax.tree_util.tree_map(lambda a, b: jnp.array_equal(a, b), input_ids, batch.batch['input_ids'][i]))
+            prompt_all_equal = jax.tree_util.tree_all(jax.tree_util.tree_map(lambda a, b: jnp.array_equal(a, b), prompt_ids, batch.batch['prompts'][i]))
+            attention_all_equal = jax.tree_util.tree_all(jax.tree_util.tree_map(lambda a, b: jnp.array_equal(a, b), attention_mask, batch.batch['attention_mask'][i]))
+            position_id_all_equal = jax.tree_util.tree_all(jax.tree_util.tree_map(lambda a, b: jnp.array_equal(a, b), position_ids, batch.batch['position_ids'][i]))
 
             assert input_id_all_equal, "Input ids are not equivalent"
             assert prompt_all_equal, "Prompt ids are not equivalent"
