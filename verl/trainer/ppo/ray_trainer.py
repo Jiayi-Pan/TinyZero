@@ -562,18 +562,10 @@ class RayPPOTrainer(object):
     def _apply_hindsight_relabeling(self, batch: DataProto):
         from verl.utils.reward_score.countdown import extract_solution, validate_equation, evaluate_equation
         torch.autograd.set_detect_anomaly(True)
-        import copy
-
-        batch_copy = copy.deepcopy(batch)
 
         for i in range(len(batch)):
             if batch.non_tensor_batch['data_source'][i] != 'countdown' or random.random() > self.relabel_fraction:
                 continue
-
-            old_input_ids = copy.deepcopy(batch.batch['input_ids'][i]) 
-            old_position_ids = copy.deepcopy(batch.batch['position_ids'][i]) 
-            old_prompt_ids = copy.deepcopy(batch.batch['prompts'][i]) 
-            old_attention_mask = copy.deepcopy(batch.batch['attention_mask'][i]) 
 
             response_ids = batch.batch['responses'][i]
             prompt_ids = batch.batch['prompts'][i]
@@ -605,12 +597,10 @@ class RayPPOTrainer(object):
             except:
                 continue 
 
-            # batch.non_tensor_batch['reward_model'][i]['ground_truth']["target"] = prediction
-            # orig_prompt = self.tokenizer.decode(prompt_ids)
+            batch.non_tensor_batch['reward_model'][i]['ground_truth']["target"] = prediction
             non_pad_ids = prompt_ids[prompt_ids != self.tokenizer.pad_token_id]    
             orig_prompt = self.tokenizer.decode(non_pad_ids)
-            # relabeled_prompt = self._relabel_prompt(orig_prompt, prediction)
-            relabeled_prompt = orig_prompt
+            relabeled_prompt = self._relabel_prompt(orig_prompt, prediction)
 
             new_prompt_ids, new_attention_mask = verl_F.tokenize_and_postprocess_data(prompt=relabeled_prompt,
                                                                             tokenizer=self.tokenizer,
@@ -625,34 +615,8 @@ class RayPPOTrainer(object):
             batch.batch['attention_mask'][i] = torch.cat((new_attention_mask[0], response_attention_mask), dim=-1)
             batch.batch['position_ids'][i] = torch.cat([new_position_ids[0], response_position_ids], dim=-1)
 
-
-            input_id_all_equal = torch.equal(old_input_ids, batch.batch['input_ids'][i])
-            prompt_all_equal = torch.equal(old_prompt_ids, batch.batch['prompts'][i])
-            attention_all_equal = torch.equal(old_attention_mask, batch.batch['attention_mask'][i])
-            position_id_all_equal = torch.equal(old_position_ids, batch.batch['position_ids'][i])
-
-            assert input_id_all_equal, f"Input ids are not equivalent for index {i}"
-            assert prompt_all_equal, f"Prompt ids are not equivalent for index {i}"
-            assert position_id_all_equal, f"Position ids are not equivalent for index {i}" 
-            assert attention_all_equal, f"Attention masks are not equivalent for index {i}"
-
         del batch.batch['response_attention_mask']
         del batch.batch['response_position_ids']
-
-        del batch_copy.batch['response_attention_mask']
-        del batch_copy.batch['response_position_ids']
-
-        def assert_tensordicts_equal(td1, td2, name="batch"):
-            assert set(td1.keys()) == set(td2.keys()), f"{name} keys differ: {set(td1.keys()) ^ set(td2.keys())}"
-
-            for key in td1.keys():
-                if not torch.equal(td1[key], td2[key]):
-                    raise AssertionError(f"{name} tensor differs at key: {key}")
-
-        assert_tensordicts_equal(batch.batch, batch_copy.batch, name="DataProto batch")
-        # assert (batch.batch == batch_copy.batch).all(), "DataProto batch differs"
-        # assert nested_equal(batch.non_tensor_batch, batch_copy.non_tensor_batch), "DataProto non_tensor_batch differs"
-        # assert nested_equal(batch.meta_info, batch_copy.meta_info), "DataProto meta_info differs"
 
     def fit(self):
         """
