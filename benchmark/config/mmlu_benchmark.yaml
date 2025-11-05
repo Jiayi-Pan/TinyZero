@@ -1,0 +1,4 @@
+# MMLU Benchmark Configuration
+model_path: "google/gemma-2b"
+data_dir: "data/data"
+num_shots: 5
