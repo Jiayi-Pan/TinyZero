@@ -9,7 +9,7 @@ services:
       service:
         name: serverless-devs-application
       function:
-        name: TinyZero-wk33
+        name: TinyZero-ug32
         description: Initialize
         runtime: custom
         environmentVariables:
@@ -23,8 +23,8 @@ services:
           - >-
             acs:fc:cn-hangzhou:official:layers/Python39-Package-Collection/versions/2
           - acs:fc:cn-hangzhou:official:layers/Python3-Flask2x/versions/2
-        memorySize: 128
-        cpu: 0.05
+        memorySize: 16384
+        cpu: 4
         timeout: 60
         codeUri: ./
         diskSize: 10240
