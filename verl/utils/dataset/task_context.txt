@@ -1,0 +1,51 @@
+--- TASK METADATA ---
+domain_knowledge: |
+  Tasks always belong to a project, so they always have the field projectID even when updating a task or making an assignment. 
+  To update existing tasks, you must include the taskID in the request. 
+  Tasks may also have subtasks, in which case they have a parent task (parentID) and a projectID.
+  Tasks frequently have an assignment to a user, team, or role.
+  Tasks can have both a plannedCompletionDate and a actualCompletionDate - if you want to know the actual date something was completed, use actualCompletionDate.
+  Assignments can be added when creating an task by adding appropriate ids to the assignments array.
+  A task name is always required.
+  To set a Due Date, set the taskConstraint to MFO and the constraintDate to the desired date.  
+  To set a Start Date, set the taskConstraint to MSO and the constraintDate to the desired date.
+  Default statuses include: New, In Progress, and Complete
+  Tasks include a taskNumber.  The task number shows the order the task appears in a list as shown to the user.  The user may referer to a task by its task number instead of its name.
+  If a user refers to a task by its number insetead of its name, then it will need to be search by taskNumber instead of name to find the task id.  i.e. I want to rename task 3 to "New Task Name"
+
+Use the following metadata for the TASK object when generating JSON queries:
+
+OBJECT: TASK
+
+Fields:
+- ID (string)
+- name (string)
+- status (string)
+- priority (int; 0=None, 1=Low, 2=Normal, 3=High, 4=Urgent)
+- plannedCompletionDate (dateTime)
+- actualCompletionDate (dateTime)
+- lastUpdateDate (dateTime)
+- percentComplete (double)
+- assignedToID (string)
+- project:name (string) ← from project reference
+- project:status (string) ← from project reference
+
+Nested & Reference Fields:
+- assignedTo:name (string) ← from assignedTo reference (USER)
+- assignments:role:name (string) ← role assigned to user(s)
+- assignments:assignedTo:name (string) ← user(s) assigned
+- assignments:assignmentPercent (double) ← percent allocation
+- assignments:status (string) ← assignment-level status
+
+Relationships:
+- assignedTo → USER
+- project → PROJ
+- assignments → [assignment object] containing role, assignedTo, and status
+
+Common Filter Operators:
+- _Mod: "isnull" → to check for unassigned fields
+- _Mod: "between" + _Range → for date range filters
+- _Mod: "cicontains" → for partial text matches
+- _Mod: "eq", "lt", "gt", etc. → for value comparisons
+
+Use this metadata to select fields and create accurate filters in your JSON responses.
